@@ -8,7 +8,6 @@ export type Sighting = {
 };
 
 const KEY = "plumage.sightings.v1";
-const MAX = 12;
 
 export function loadSightings(): Sighting[] {
   if (typeof window === "undefined") return [];
@@ -23,7 +22,7 @@ export function loadSightings(): Sighting[] {
 
 export function saveSighting(s: Sighting) {
   if (typeof window === "undefined") return;
-  const all = [s, ...loadSightings()].slice(0, MAX);
+  const all = [s, ...loadSightings()];
   localStorage.setItem(KEY, JSON.stringify(all));
 }
 
