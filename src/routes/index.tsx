@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { Camera, Feather, Loader2, RotateCcw, Upload, X } from "lucide-react";
 
 import heroBird from "@/assets/hero-bird.jpg";
+import { TabBar } from "@/components/TabBar";
 import { identifyBird, type BirdIdentification } from "@/lib/identify.functions";
 import {
   fileToDataUrl,
@@ -34,7 +36,7 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-type Phase = "idle" | "preview" | "loading" | "result" | "error";
+type Phase = "idle" | "loading" | "result" | "error";
 
 function Home() {
   const identify = useServerFn(identifyBird);
@@ -62,7 +64,7 @@ function Home() {
       setResult(out);
       setPhase("result");
       try {
-        const thumb = await makeThumbnail(dataUrl, 280);
+        const thumb = await makeThumbnail(dataUrl, 320);
         const s: Sighting = {
           id: crypto.randomUUID(),
           at: Date.now(),
@@ -72,7 +74,7 @@ function Home() {
         saveSighting(s);
         setSightings(loadSightings());
       } catch {
-        // ignore thumb errors
+        // ignore
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
@@ -90,114 +92,135 @@ function Home() {
   }
 
   return (
-    <main className="min-h-screen">
-      <header className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6">
+    <main className="min-h-screen pb-32">
+      <motion.header
+        initial={{ y: -16, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.4 }}
+        className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6"
+      >
         <Link to="/" className="flex items-center gap-2 text-primary">
-          <Feather className="h-5 w-5" strokeWidth={2.2} />
+          <motion.span
+            initial={{ rotate: -20, scale: 0.6 }}
+            animate={{ rotate: 0, scale: 1 }}
+            transition={{ type: "spring", stiffness: 260, damping: 14 }}
+          >
+            <Feather className="h-5 w-5" strokeWidth={2.2} />
+          </motion.span>
           <span className="font-display text-xl font-semibold tracking-tight">Plumage</span>
         </Link>
-        <Link
-          to="/history"
-          className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-        >
-          Field journal
-        </Link>
-      </header>
+        <span className="text-xs uppercase tracking-widest text-muted-foreground">
+          Field guide
+        </span>
+      </motion.header>
 
-      <section className="mx-auto max-w-3xl px-5 pb-24 pt-8">
-        {phase === "idle" && (
-          <Hero
-            onCamera={() => fileRef.current?.click()}
-            onUpload={() => uploadRef.current?.click()}
-          />
-        )}
-
-        {phase !== "idle" && (
-          <div className="mx-auto max-w-md">
-            <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
-              {imageUrl && (
-                <img
-                  src={imageUrl}
-                  alt="Bird to identify"
-                  className="aspect-square w-full object-cover"
-                />
+      <section className="mx-auto max-w-3xl px-5 pt-8">
+        <AnimatePresence mode="wait">
+          {phase === "idle" ? (
+            <motion.div
+              key="hero"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.35 }}
+            >
+              <Hero
+                onCamera={() => fileRef.current?.click()}
+                onUpload={() => uploadRef.current?.click()}
+              />
+              {sightings.length > 0 && (
+                <RecentStrip sightings={sightings.slice(0, 6)} />
               )}
-              <div className="p-5">
-                {phase === "loading" && (
-                  <div className="flex items-center gap-3 text-muted-foreground">
-                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                    <span className="text-sm">Consulting the field guide…</span>
-                  </div>
-                )}
-
-                {phase === "result" && result && <ResultCard result={result} />}
-
-                {phase === "error" && (
-                  <div className="space-y-3">
-                    <p className="text-sm text-destructive">{error}</p>
-                    <button
-                      onClick={reset}
-                      className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                    >
-                      <RotateCcw className="h-4 w-4" /> Try again
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {(phase === "result" || phase === "error") && (
-              <div className="mt-4 flex justify-center">
-                <button
-                  onClick={reset}
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground hover:bg-secondary"
-                >
-                  <Camera className="h-4 w-4" /> Identify another
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {sightings.length > 0 && phase === "idle" && (
-          <div className="mt-16">
-            <div className="mb-4 flex items-end justify-between">
-              <h2 className="font-display text-xl">Recent sightings</h2>
-              <Link
-                to="/history"
-                className="text-sm text-muted-foreground hover:text-foreground"
+            </motion.div>
+          ) : (
+            <motion.div
+              key="capture"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.35 }}
+              className="mx-auto max-w-md"
+            >
+              <motion.div
+                layout
+                className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm"
               >
-                View all →
-              </Link>
-            </div>
-            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {sightings.slice(0, 6).map((s) => (
-                <li
-                  key={s.id}
-                  className="overflow-hidden rounded-2xl border border-border bg-card"
-                >
-                  <img
-                    src={s.thumbnail}
-                    alt={s.result.commonName}
-                    loading="lazy"
-                    className="aspect-square w-full object-cover"
-                  />
-                  <div className="px-3 py-2">
-                    <p className="truncate font-display text-sm font-medium">
-                      {s.result.commonName}
-                    </p>
-                    <p className="truncate text-xs italic text-muted-foreground">
-                      {s.result.scientificName || "—"}
-                    </p>
+                {imageUrl && (
+                  <div className="relative">
+                    <img
+                      src={imageUrl}
+                      alt="Bird to identify"
+                      className="aspect-square w-full object-cover"
+                    />
+                    {phase === "loading" && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="absolute inset-0 flex items-end bg-gradient-to-t from-black/40 to-transparent p-4"
+                      >
+                        <ScanLine />
+                      </motion.div>
+                    )}
                   </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+                )}
+                <div className="p-5">
+                  <AnimatePresence mode="wait">
+                    {phase === "loading" && (
+                      <motion.div
+                        key="load"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex items-center gap-3 text-muted-foreground"
+                      >
+                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                        <span className="text-sm">Consulting the field guide…</span>
+                      </motion.div>
+                    )}
+                    {phase === "result" && result && (
+                      <ResultCard key="res" result={result} />
+                    )}
+                    {phase === "error" && (
+                      <motion.div
+                        key="err"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="space-y-3"
+                      >
+                        <p className="text-sm text-destructive">{error}</p>
+                        <button
+                          onClick={reset}
+                          className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                        >
+                          <RotateCcw className="h-4 w-4" /> Try again
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+
+              {(phase === "result" || phase === "error") && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="mt-4 flex justify-center"
+                >
+                  <motion.button
+                    whileTap={{ scale: 0.96 }}
+                    onClick={reset}
+                    className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground hover:bg-secondary"
+                  >
+                    <Camera className="h-4 w-4" /> Identify another
+                  </motion.button>
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
 
-      {/* Hidden inputs */}
       <input
         ref={fileRef}
         type="file"
@@ -219,6 +242,8 @@ function Home() {
           if (f) handleFile(f);
         }}
       />
+
+      <TabBar />
     </main>
   );
 }
@@ -226,37 +251,128 @@ function Home() {
 function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => void }) {
   return (
     <div className="text-center">
-      <div className="mx-auto mt-2 max-w-xs">
-        <img
+      <motion.div
+        initial={{ scale: 0.85, opacity: 0, rotate: -4 }}
+        animate={{ scale: 1, opacity: 1, rotate: 0 }}
+        transition={{ type: "spring", stiffness: 180, damping: 18, delay: 0.05 }}
+        className="mx-auto mt-2 max-w-xs"
+      >
+        <motion.img
           src={heroBird}
           alt="Illustrated songbird perched on a leafy twig"
           width={1024}
           height={1024}
-          className="h-auto w-full rounded-full"
+          animate={{ y: [0, -6, 0] }}
+          transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+          className="h-auto w-full rounded-full drop-shadow-sm"
         />
-      </div>
-      <h1 className="mt-4 font-display text-4xl font-semibold leading-tight text-foreground sm:text-5xl">
+      </motion.div>
+      <motion.h1
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.45 }}
+        className="mt-4 font-display text-4xl font-semibold leading-tight text-foreground sm:text-5xl"
+      >
         Who is that bird?
-      </h1>
-      <p className="mx-auto mt-3 max-w-md text-balance text-muted-foreground">
+      </motion.h1>
+      <motion.p
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.45 }}
+        className="mx-auto mt-3 max-w-md text-balance text-muted-foreground"
+      >
         Snap a photo and Plumage will name the species, where it lives, and one
         thing worth knowing about it.
-      </p>
+      </motion.p>
 
-      <div className="mt-8 flex flex-col items-center gap-3">
-        <button
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.45 }}
+        className="mt-8 flex flex-col items-center gap-3"
+      >
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
           onClick={onCamera}
-          className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90 active:scale-[0.98]"
+          className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
         >
           <Camera className="h-5 w-5" /> Identify a bird
-        </button>
+        </motion.button>
         <button
           onClick={onUpload}
           className="inline-flex items-center gap-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
         >
           <Upload className="h-4 w-4" /> Upload a photo instead
         </button>
+      </motion.div>
+    </div>
+  );
+}
+
+function RecentStrip({ sightings }: { sightings: Sighting[] }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.5, duration: 0.45 }}
+      className="mt-14"
+    >
+      <div className="mb-4 flex items-end justify-between">
+        <h2 className="font-display text-xl">Recent sightings</h2>
+        <Link to="/history" className="text-sm text-muted-foreground hover:text-foreground">
+          View all →
+        </Link>
       </div>
+      <motion.ul
+        className="grid grid-cols-2 gap-3 sm:grid-cols-3"
+        initial="hidden"
+        animate="show"
+        variants={{
+          hidden: {},
+          show: { transition: { staggerChildren: 0.06 } },
+        }}
+      >
+        {sightings.map((s) => (
+          <motion.li
+            key={s.id}
+            variants={{
+              hidden: { opacity: 0, y: 12 },
+              show: { opacity: 1, y: 0 },
+            }}
+            whileHover={{ y: -3 }}
+            className="overflow-hidden rounded-2xl border border-border bg-card"
+          >
+            <img
+              src={s.thumbnail}
+              alt={s.result.commonName}
+              loading="lazy"
+              className="aspect-square w-full object-cover"
+            />
+            <div className="px-3 py-2">
+              <p className="truncate font-display text-sm font-medium">
+                {s.result.commonName}
+              </p>
+              <p className="truncate text-xs italic text-muted-foreground">
+                {s.result.scientificName || "—"}
+              </p>
+            </div>
+          </motion.li>
+        ))}
+      </motion.ul>
+    </motion.div>
+  );
+}
+
+function ScanLine() {
+  return (
+    <div className="w-full overflow-hidden rounded-full bg-white/20 backdrop-blur">
+      <motion.div
+        initial={{ x: "-100%" }}
+        animate={{ x: "100%" }}
+        transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+        className="h-1 w-1/3 bg-primary-foreground/90"
+      />
     </div>
   );
 }
@@ -264,12 +380,16 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
 function ResultCard({ result }: { result: BirdIdentification }) {
   if (!result.isBird) {
     return (
-      <div className="space-y-2">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-2"
+      >
         <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
           <X className="h-3 w-3" /> No bird found
         </div>
         <p className="text-sm text-muted-foreground">{result.description}</p>
-      </div>
+      </motion.div>
     );
   }
   const dot =
@@ -279,25 +399,48 @@ function ResultCard({ result }: { result: BirdIdentification }) {
         ? "bg-accent"
         : "bg-muted-foreground/50";
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
-        <span className={`inline-block h-2 w-2 rounded-full ${dot}`} />
+    <motion.div
+      initial="hidden"
+      animate="show"
+      variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08 } } }}
+      className="space-y-3"
+    >
+      <motion.div
+        variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}
+        className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground"
+      >
+        <motion.span
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 360, damping: 18, delay: 0.2 }}
+          className={`inline-block h-2 w-2 rounded-full ${dot}`}
+        />
         {result.confidence} confidence
-      </div>
-      <div>
+      </motion.div>
+      <motion.div
+        variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}
+      >
         <h3 className="font-display text-2xl font-semibold leading-tight text-foreground">
           {result.commonName}
         </h3>
         {result.scientificName && (
           <p className="text-sm italic text-muted-foreground">{result.scientificName}</p>
         )}
-      </div>
-      <p className="text-sm leading-relaxed text-foreground/90">{result.description}</p>
+      </motion.div>
+      <motion.p
+        variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}
+        className="text-sm leading-relaxed text-foreground/90"
+      >
+        {result.description}
+      </motion.p>
       {result.note && (
-        <p className="rounded-lg bg-secondary px-3 py-2 text-xs text-secondary-foreground">
+        <motion.p
+          variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}
+          className="rounded-lg bg-secondary px-3 py-2 text-xs text-secondary-foreground"
+        >
           {result.note}
-        </p>
+        </motion.p>
       )}
-    </div>
+    </motion.div>
   );
 }
