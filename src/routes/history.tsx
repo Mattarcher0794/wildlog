@@ -1,27 +1,35 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Feather, Search, Trash2 } from "lucide-react";
+import { PawPrint, Search, Trash2 } from "lucide-react";
 
 import { TabBar } from "@/components/TabBar";
 import { clearSightings, loadSightings, type Sighting } from "@/lib/sightings";
+import { ANIMAL_GROUPS, type AnimalGroup } from "@/lib/identify.functions";
 
 export const Route = createFileRoute("/history")({
   head: () => ({
     meta: [
-      { title: "Field journal · Plumage" },
+      { title: "Field journal · Wildeye" },
       {
         name: "description",
-        content: "Your complete log of bird identifications, kept in your pocket field journal.",
+        content: "Your complete log of animal identifications, kept in your pocket field journal.",
       },
     ],
   }),
   component: HistoryPage,
 });
 
+function groupOf(s: Sighting): AnimalGroup {
+  const g = s.result.group;
+  if (g && (ANIMAL_GROUPS as readonly string[]).includes(g)) return g;
+  return "Other";
+}
+
 function HistoryPage() {
   const [sightings, setSightings] = useState<Sighting[]>([]);
   const [query, setQuery] = useState("");
+  const [activeGroup, setActiveGroup] = useState<AnimalGroup | "All">("All");
 
   useEffect(() => {
     setSightings(loadSightings());
@@ -33,20 +41,52 @@ function HistoryPage() {
     setSightings([]);
   }
 
+  // Only show group chips that actually have entries.
+  const groupCounts = useMemo(() => {
+    const counts = new Map<AnimalGroup, number>();
+    for (const s of sightings) {
+      if (!s.result.isAnimal) continue;
+      const g = groupOf(s);
+      counts.set(g, (counts.get(g) ?? 0) + 1);
+    }
+    return counts;
+  }, [sightings]);
+
+  const availableGroups = useMemo(
+    () => ANIMAL_GROUPS.filter((g) => groupCounts.has(g)),
+    [groupCounts],
+  );
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return sightings;
-    return sightings.filter(
-      (s) =>
+    return sightings.filter((s) => {
+      if (activeGroup !== "All" && groupOf(s) !== activeGroup) return false;
+      if (!q) return true;
+      return (
         s.result.commonName.toLowerCase().includes(q) ||
-        s.result.scientificName.toLowerCase().includes(q),
-    );
-  }, [sightings, query]);
+        s.result.scientificName.toLowerCase().includes(q)
+      );
+    });
+  }, [sightings, query, activeGroup]);
+
+  // Group the filtered list into sections by animal type.
+  const sections = useMemo(() => {
+    const map = new Map<AnimalGroup, Sighting[]>();
+    for (const s of filtered) {
+      const g = groupOf(s);
+      if (!map.has(g)) map.set(g, []);
+      map.get(g)!.push(s);
+    }
+    return ANIMAL_GROUPS.filter((g) => map.has(g)).map((g) => ({
+      group: g,
+      items: map.get(g)!,
+    }));
+  }, [filtered]);
 
   const uniqueSpecies = useMemo(
     () =>
       new Set(
-        sightings.filter((s) => s.result.isBird).map((s) => s.result.commonName.toLowerCase()),
+        sightings.filter((s) => s.result.isAnimal).map((s) => s.result.commonName.toLowerCase()),
       ).size,
     [sightings],
   );
@@ -60,8 +100,8 @@ function HistoryPage() {
         className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6"
       >
         <Link to="/" className="flex items-center gap-2 text-primary">
-          <Feather className="h-5 w-5" strokeWidth={2.2} />
-          <span className="font-display text-xl font-semibold">Plumage</span>
+          <PawPrint className="h-5 w-5" strokeWidth={2.2} />
+          <span className="font-display text-xl font-semibold">Wildeye</span>
         </Link>
         {sightings.length > 0 && (
           <button
@@ -82,7 +122,7 @@ function HistoryPage() {
           <h1 className="font-display text-3xl font-semibold">Field journal</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {sightings.length === 0
-              ? "Every bird you identify will land here."
+              ? "Every animal you identify will land here."
               : `${sightings.length} sighting${sightings.length === 1 ? "" : "s"} · ${uniqueSpecies} species`}
           </p>
         </motion.div>
@@ -98,10 +138,10 @@ function HistoryPage() {
               animate={{ y: [0, -6, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             >
-              <Feather className="mx-auto h-8 w-8 text-muted-foreground" />
+              <PawPrint className="mx-auto h-8 w-8 text-muted-foreground" />
             </motion.div>
             <p className="mt-3 text-sm text-muted-foreground">
-              No sightings yet. Go snap your first bird.
+              No sightings yet. Go snap your first animal.
             </p>
             <Link
               to="/"
@@ -127,61 +167,133 @@ function HistoryPage() {
               />
             </motion.div>
 
-            <motion.ul layout className="mt-6 space-y-3">
-              <AnimatePresence initial={false}>
-                {filtered.map((s, i) => (
-                  <motion.li
-                    key={s.id}
+            {availableGroups.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="mt-4 flex flex-wrap gap-2"
+              >
+                <GroupChip
+                  label="All"
+                  count={sightings.filter((s) => s.result.isAnimal).length}
+                  active={activeGroup === "All"}
+                  onClick={() => setActiveGroup("All")}
+                />
+                {availableGroups.map((g) => (
+                  <GroupChip
+                    key={g}
+                    label={g}
+                    count={groupCounts.get(g) ?? 0}
+                    active={activeGroup === g}
+                    onClick={() => setActiveGroup(g)}
+                  />
+                ))}
+              </motion.div>
+            )}
+
+            <div className="mt-6 space-y-8">
+              <AnimatePresence initial={false} mode="popLayout">
+                {sections.map((section) => (
+                  <motion.div
+                    key={section.group}
                     layout
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ delay: Math.min(i, 8) * 0.04, duration: 0.3 }}
-                    whileHover={{ scale: 1.01 }}
-                    className="flex items-start gap-4 overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-sm"
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    <motion.img
-                      whileHover={{ scale: 1.06 }}
-                      transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                      src={s.thumbnail}
-                      alt={s.result.commonName}
-                      loading="lazy"
-                      className="h-24 w-24 flex-shrink-0 rounded-xl object-cover"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-display text-lg font-semibold leading-tight">
-                        {s.result.commonName}
-                      </h3>
-                      {s.result.scientificName && (
-                        <p className="text-xs italic text-muted-foreground">
-                          {s.result.scientificName}
-                        </p>
-                      )}
-                      <p className="mt-1 line-clamp-3 text-sm text-foreground/85">
-                        {s.result.description}
-                      </p>
-                      <p className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">
-                        {new Date(s.at).toLocaleString()}
-                      </p>
-                    </div>
-                  </motion.li>
+                    <h2 className="mb-3 flex items-center gap-2 font-display text-lg font-semibold">
+                      {section.group}
+                      <span className="text-xs font-normal text-muted-foreground">
+                        {section.items.length}
+                      </span>
+                    </h2>
+                    <ul className="space-y-3">
+                      {section.items.map((s, i) => (
+                        <motion.li
+                          key={s.id}
+                          layout
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: Math.min(i, 8) * 0.04, duration: 0.3 }}
+                          whileHover={{ scale: 1.01 }}
+                          className="flex items-start gap-4 overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-sm"
+                        >
+                          <motion.img
+                            whileHover={{ scale: 1.06 }}
+                            transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                            src={s.thumbnail}
+                            alt={s.result.commonName}
+                            loading="lazy"
+                            className="h-24 w-24 flex-shrink-0 rounded-xl object-cover"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-display text-lg font-semibold leading-tight">
+                              {s.result.commonName}
+                            </h3>
+                            {s.result.scientificName && (
+                              <p className="text-xs italic text-muted-foreground">
+                                {s.result.scientificName}
+                              </p>
+                            )}
+                            <p className="mt-1 line-clamp-3 text-sm text-foreground/85">
+                              {s.result.description}
+                            </p>
+                            <p className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+                              {new Date(s.at).toLocaleString()}
+                            </p>
+                          </div>
+                        </motion.li>
+                      ))}
+                    </ul>
+                  </motion.div>
                 ))}
               </AnimatePresence>
               {filtered.length === 0 && (
-                <motion.li
+                <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="py-12 text-center text-sm text-muted-foreground"
                 >
-                  No matches for “{query}”.
-                </motion.li>
+                  No matches{query ? ` for “${query}”` : ""}.
+                </motion.p>
               )}
-            </motion.ul>
+            </div>
           </>
         )}
       </section>
 
       <TabBar />
     </main>
+  );
+}
+
+function GroupChip({
+  label,
+  count,
+  active,
+  onClick,
+}: {
+  label: string;
+  count: number;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <motion.button
+      whileTap={{ scale: 0.95 }}
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+        active
+          ? "border-primary bg-primary text-primary-foreground"
+          : "border-border bg-card text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {label}
+      <span className={active ? "text-primary-foreground/80" : "text-muted-foreground/70"}>
+        {count}
+      </span>
+    </motion.button>
   );
 }
