@@ -12,6 +12,11 @@ const verifyInput = z.object({
   code: z.string().regex(/^\d{6}$/),
 });
 
+// Fixed credentials for the password-based test bypass (skips the 6-digit code).
+const TEST_EMAIL = "test123@wildlog.test";
+const TEST_PASSWORD = "Test123!bypass";
+
+
 function getStringField(value: unknown, key: string): string | null {
   if (!value || typeof value !== "object") return null;
   const field = (value as Record<string, unknown>)[key];
