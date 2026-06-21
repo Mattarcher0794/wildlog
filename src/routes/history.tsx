@@ -215,7 +215,7 @@ function HistoryPage() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: Math.min(i, 8) * 0.04, duration: 0.3 }}
                           whileHover={{ scale: 1.01, rotate: -0.4 }}
-                          className="card-pop flex items-start gap-4 overflow-hidden rounded-2xl bg-card p-3"
+                          className="card-soft flex items-start gap-4 overflow-hidden rounded-2xl bg-card p-3"
                         >
                           <motion.img
                             whileHover={{ scale: 1.06 }}
@@ -223,10 +223,10 @@ function HistoryPage() {
                             src={s.thumbnail}
                             alt={s.result.commonName}
                             loading="lazy"
-                            className="h-24 w-24 flex-shrink-0 rounded-xl border-2 border-border object-cover"
+                            className="blob h-24 w-24 flex-shrink-0 object-cover"
                           />
                           <div className="min-w-0 flex-1">
-                            <h3 className="font-display text-lg font-bold leading-tight">
+                            <h3 className="text-lg font-bold leading-tight text-foreground">
                               {s.result.commonName}
                             </h3>
                             {s.result.scientificName && (
@@ -237,7 +237,7 @@ function HistoryPage() {
                             <p className="mt-1 line-clamp-3 text-sm text-foreground/85">
                               {s.result.description}
                             </p>
-                            <p className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+                            <p className="mt-1.5 font-mono text-[11px] text-muted-foreground">
                               {new Date(s.at).toLocaleString()}
                             </p>
                           </div>
