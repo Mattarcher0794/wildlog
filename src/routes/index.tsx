@@ -414,11 +414,11 @@ function ResultCard({ result }: { result: AnimalIdentification }) {
         className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground"
       >
         {result.group && (
-          <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-1 font-medium text-secondary-foreground">
+          <span className="inline-flex items-center rounded-full border-2 border-border bg-accent px-2.5 py-1 font-bold text-accent-foreground">
             {result.group}
           </span>
         )}
-        <span className="inline-flex items-center gap-1.5">
+        <span className="inline-flex items-center gap-1.5 font-semibold">
           <motion.span
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -431,7 +431,7 @@ function ResultCard({ result }: { result: AnimalIdentification }) {
       <motion.div
         variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}
       >
-        <h3 className="font-display text-2xl font-semibold leading-tight text-foreground">
+        <h3 className="font-display text-3xl font-bold leading-tight text-foreground">
           {result.commonName}
         </h3>
         {result.scientificName && (
