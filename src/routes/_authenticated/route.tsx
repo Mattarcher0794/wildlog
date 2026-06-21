@@ -30,6 +30,11 @@ function tabIndex(pathname: string): number {
   return i === -1 ? 0 : i;
 }
 
+function isTabRoute(pathname: string): boolean {
+  if (pathname === "/") return true;
+  return TAB_ORDER.some((t) => t !== "/" && pathname.startsWith(t));
+}
+
 function AuthedShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const reduceMotion = useReducedMotion();
@@ -39,7 +44,13 @@ function AuthedShell() {
   const direction = idx >= lastIndexRef.current ? 1 : -1;
   lastIndexRef.current = idx;
 
+  // Full-screen routes (e.g. username setup) opt out of the nav chrome.
+  if (!isTabRoute(pathname)) {
+    return <Outlet />;
+  }
+
   const showPill = pathname === "/";
+
 
   const variants = {
     enter: (dir: number) =>
