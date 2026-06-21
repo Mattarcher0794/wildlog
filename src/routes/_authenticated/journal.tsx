@@ -250,8 +250,6 @@ function JournalPage() {
           </>
         )}
       </section>
-
-      <TabBar />
     </main>
   );
 }
