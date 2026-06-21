@@ -89,6 +89,11 @@ function Onboarding() {
 
   const step = steps[index];
 
+  // Match the SSR placeholder on first paint, then hold a neutral splash until
+  // the session check resolves — no error-card flash, no wrong-screen flash.
+  if (!mounted) return null;
+  if (checking) return <Splash />;
+
   return (
     <main className="flex min-h-screen flex-col bg-background px-5">
       <header className="flex items-center justify-between pt-6">
