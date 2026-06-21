@@ -259,33 +259,33 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
         initial={{ scale: 0.85, opacity: 0, rotate: -4 }}
         animate={{ scale: 1, opacity: 1, rotate: 0 }}
         transition={{ type: "spring", stiffness: 180, damping: 18, delay: 0.05 }}
-        className="mx-auto mt-2 max-w-xs"
+        className="mx-auto mt-2 max-w-sm"
       >
         <motion.img
           src={heroAnimals}
-          alt="Illustrated collection of animals — a fox, owl, frog, fish and butterflies"
+          alt="Bold flat illustration of animals — a fox, owl, frog, fish, turtle and butterfly"
           width={1024}
           height={1024}
-          animate={{ y: [0, -6, 0] }}
+          animate={{ y: [0, -8, 0] }}
           transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-          className="h-auto w-full rounded-full drop-shadow-sm"
+          className="h-auto w-full drop-shadow-[6px_8px_0_rgba(0,0,0,0.08)]"
         />
       </motion.div>
       <motion.h1
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.45 }}
-        className="mt-4 font-display text-4xl font-semibold leading-tight text-foreground sm:text-5xl"
+        className="mt-4 font-display text-5xl font-bold leading-[1.05] text-foreground sm:text-6xl"
       >
-        What animal is that?
+        What animal <span className="text-primary">is that?</span>
       </motion.h1>
       <motion.p
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.45 }}
-        className="mx-auto mt-3 max-w-md text-balance text-muted-foreground"
+        className="mx-auto mt-3 max-w-md text-balance font-medium text-muted-foreground"
       >
-        Snap a photo and Wildeye will name the species, where it lives, and one
+        Snap a photo and Wildeye names the species, where it lives, and one cool
         thing worth knowing about it.
       </motion.p>
 
@@ -296,16 +296,16 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
         className="mt-8 flex flex-col items-center gap-3"
       >
         <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
+          whileHover={{ scale: 1.03, rotate: -1 }}
+          whileTap={{ scale: 0.96 }}
           onClick={onCamera}
-          className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+          className="card-pop inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-bold text-primary-foreground hover:bg-primary/90"
         >
           <Camera className="h-5 w-5" /> Identify an animal
         </motion.button>
         <button
           onClick={onUpload}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
         >
           <Upload className="h-4 w-4" /> Upload a photo instead
         </button>
