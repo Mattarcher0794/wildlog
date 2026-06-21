@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TmpHeroCheckRouteImport } from './routes/tmp-hero-check'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as UsernameRouteImport } from './routes/$username'
@@ -23,11 +22,6 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 
-const TmpHeroCheckRoute = TmpHeroCheckRouteImport.update({
-  id: '/tmp-hero-check',
-  path: '/tmp-hero-check',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -94,7 +88,6 @@ export interface FileRoutesByFullPath {
   '/$username': typeof UsernameRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
-  '/tmp-hero-check': typeof TmpHeroCheckRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/map': typeof AuthenticatedMapRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -107,7 +100,6 @@ export interface FileRoutesByTo {
   '/$username': typeof UsernameRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
-  '/tmp-hero-check': typeof TmpHeroCheckRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/map': typeof AuthenticatedMapRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -123,7 +115,6 @@ export interface FileRoutesById {
   '/$username': typeof UsernameRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
-  '/tmp-hero-check': typeof TmpHeroCheckRoute
   '/_authenticated/journal': typeof AuthenticatedJournalRoute
   '/_authenticated/map': typeof AuthenticatedMapRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
@@ -140,7 +131,6 @@ export interface FileRouteTypes {
     | '/$username'
     | '/auth'
     | '/onboarding'
-    | '/tmp-hero-check'
     | '/journal'
     | '/map'
     | '/profile'
@@ -153,7 +143,6 @@ export interface FileRouteTypes {
     | '/$username'
     | '/auth'
     | '/onboarding'
-    | '/tmp-hero-check'
     | '/journal'
     | '/map'
     | '/profile'
@@ -168,7 +157,6 @@ export interface FileRouteTypes {
     | '/$username'
     | '/auth'
     | '/onboarding'
-    | '/tmp-hero-check'
     | '/_authenticated/journal'
     | '/_authenticated/map'
     | '/_authenticated/profile'
@@ -184,7 +172,6 @@ export interface RootRouteChildren {
   UsernameRoute: typeof UsernameRoute
   AuthRoute: typeof AuthRoute
   OnboardingRoute: typeof OnboardingRoute
-  TmpHeroCheckRoute: typeof TmpHeroCheckRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -192,13 +179,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/tmp-hero-check': {
-      id: '/tmp-hero-check'
-      path: '/tmp-hero-check'
-      fullPath: '/tmp-hero-check'
-      preLoaderRoute: typeof TmpHeroCheckRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
@@ -310,7 +290,6 @@ const rootRouteChildren: RootRouteChildren = {
   UsernameRoute: UsernameRoute,
   AuthRoute: AuthRoute,
   OnboardingRoute: OnboardingRoute,
-  TmpHeroCheckRoute: TmpHeroCheckRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
