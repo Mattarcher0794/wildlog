@@ -253,19 +253,17 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
   return (
     <div className="text-center">
       <motion.div
-        initial={{ scale: 0.85, opacity: 0, rotate: -4 }}
-        animate={{ scale: 1, opacity: 1, rotate: 0 }}
-        transition={{ type: "spring", stiffness: 180, damping: 18, delay: 0.05 }}
+        initial={{ scale: 0.92, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }}
         className="mx-auto mt-2 max-w-sm"
       >
-        <motion.img
+        <img
           src={heroAnimals}
-          alt="Bold flat illustration of animals — a fox, owl, frog, fish, turtle and butterfly"
+          alt="Flat two-tone illustration of animals — a fox, owl, frog and fish in coral and deep plum"
           width={1024}
           height={1024}
-          animate={{ y: [0, -8, 0] }}
-          transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-          className="h-auto w-full rounded-[2rem] drop-shadow-[6px_8px_0_rgba(0,0,0,0.08)]"
+          className="h-auto w-full rounded-[2rem]"
         />
       </motion.div>
       <motion.h1
