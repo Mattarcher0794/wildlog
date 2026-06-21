@@ -100,10 +100,7 @@ function HistoryPage() {
         transition={{ duration: 0.4 }}
         className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6"
       >
-        <Link to="/" className="flex items-center gap-2 text-foreground">
-          <img src={logoBadge} alt="Wildeye owl badge" width={512} height={512} className="h-9 w-9" />
-          <span className="font-display text-2xl font-bold">Wildeye</span>
-        </Link>
+        <Wordmark />
         {sightings.length > 0 && (
           <button
             onClick={clearAll}
@@ -120,10 +117,10 @@ function HistoryPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <h1 className="font-display text-3xl font-semibold">Field journal</h1>
+          <h1 className="font-display text-3xl">Field journal</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {sightings.length === 0
-              ? "Every animal you identify will land here."
+              ? "Every animal you spot will land here."
               : `${sightings.length} sighting${sightings.length === 1 ? "" : "s"} · ${uniqueSpecies} species`}
           </p>
         </motion.div>
@@ -138,17 +135,16 @@ function HistoryPage() {
             <motion.div
               animate={{ y: [0, -6, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <PawPrint className="mx-auto h-8 w-8 text-muted-foreground" />
-            </motion.div>
-            <p className="mt-3 text-sm text-muted-foreground">
-              No sightings yet. Go snap your first animal.
+              className="mx-auto h-14 w-14 blob bg-peach/60"
+            />
+            <p className="mt-4 text-sm text-muted-foreground">
+              No sightings yet. Spot something? Log it here.
             </p>
             <Link
               to="/"
-              className="mt-5 inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              className="mt-5 inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
             >
-              Start identifying
+              Log a sighting
             </Link>
           </motion.div>
         ) : (
