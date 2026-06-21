@@ -266,9 +266,11 @@ function AuthPage() {
                   </button>
                 </div>
               ) : (
-                <form onSubmit={sendCode} className="mt-6 space-y-3">
+                <form onSubmit={sendCode} noValidate className="mt-6 space-y-3">
                   <input
-                    type="email"
+                    type="text"
+                    inputMode="email"
+                    autoComplete="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
