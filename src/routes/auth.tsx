@@ -7,7 +7,7 @@ import { Mail, Phone, ArrowLeft } from "lucide-react";
 import { Wordmark } from "@/components/Brand";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { supabase } from "@/integrations/supabase/client";
-import { verifyAuthEmailCode } from "@/lib/auth.functions";
+import { testSignIn, verifyAuthEmailCode } from "@/lib/auth.functions";
 import { ONBOARDED_KEY } from "./onboarding";
 
 export const Route = createFileRoute("/auth")({
@@ -58,6 +58,7 @@ function friendlyAuthError(err: unknown): string {
 function AuthPage() {
   const navigate = useNavigate();
   const verifyAuthCode = useServerFn(verifyAuthEmailCode);
+  const runTestSignIn = useServerFn(testSignIn);
   const [method, setMethod] = useState<Method>("email");
   const [step, setStep] = useState<Step>("contact");
   const [email, setEmail] = useState("");
@@ -101,6 +102,23 @@ function AuthPage() {
   async function sendCode(e?: React.FormEvent) {
     e?.preventDefault();
     setError(null);
+
+    // Test bypass: typing "Test123" as the email skips the 6-digit code.
+    if (method === "email" && email.trim().toLowerCase() === "test123") {
+      setBusy(true);
+      try {
+        const session = await runTestSignIn();
+        const { error: sessionError } = await supabase.auth.setSession(session);
+        if (sessionError) throw sessionError;
+        navigate({ to: "/", replace: true });
+      } catch {
+        setError("Couldn't start the test session. Please try again.");
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+
 
     if (method === "phone") {
       const normalized = normalizePhone(phone);
@@ -248,9 +266,11 @@ function AuthPage() {
                   </button>
                 </div>
               ) : (
-                <form onSubmit={sendCode} className="mt-6 space-y-3">
+                <form onSubmit={sendCode} noValidate className="mt-6 space-y-3">
                   <input
-                    type="email"
+                    type="text"
+                    inputMode="email"
+                    autoComplete="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
