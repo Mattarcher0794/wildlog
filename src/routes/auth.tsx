@@ -103,6 +103,23 @@ function AuthPage() {
     e?.preventDefault();
     setError(null);
 
+    // Test bypass: typing "Test123" as the email skips the 6-digit code.
+    if (method === "email" && email.trim().toLowerCase() === "test123") {
+      setBusy(true);
+      try {
+        const session = await runTestSignIn();
+        const { error: sessionError } = await supabase.auth.setSession(session);
+        if (sessionError) throw sessionError;
+        navigate({ to: "/", replace: true });
+      } catch {
+        setError("Couldn't start the test session. Please try again.");
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+
+
     if (method === "phone") {
       const normalized = normalizePhone(phone);
       if (!isValidPhone(normalized)) {
