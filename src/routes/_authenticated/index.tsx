@@ -118,10 +118,7 @@ function Home() {
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.35 }}
             >
-              <Hero
-                onCamera={() => fileRef.current?.click()}
-                onUpload={() => uploadRef.current?.click()}
-              />
+              <Hero />
               {sightings.length > 0 && (
                 <RecentStrip sightings={sightings.slice(0, 6)} />
               )}
@@ -242,19 +239,55 @@ function Home() {
         }}
       />
 
+      {phase === "idle" && (
+        <CtaDock
+          onCamera={() => fileRef.current?.click()}
+          onUpload={() => uploadRef.current?.click()}
+        />
+      )}
+
       <TabBar />
     </main>
   );
 }
 
-function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => void }) {
+function CtaDock({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => void }) {
+  return (
+    <motion.div
+      initial={{ y: 24, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ delay: 0.35, duration: 0.4 }}
+      className="fixed inset-x-0 z-20 flex flex-col items-center gap-[10px]"
+      style={{ bottom: "calc(104px + env(safe-area-inset-bottom))" }}
+    >
+      <motion.button
+        whileTap={{ scale: 0.97 }}
+        onClick={onCamera}
+        className="flex h-14 w-[88%] max-w-md items-center justify-center gap-2 rounded-full text-base font-bold text-white shadow-[0_8px_22px_-10px_rgba(0,0,0,0.45)]"
+        style={{ backgroundColor: "#4a6b3a" }}
+      >
+        <Camera className="h-5 w-5" strokeWidth={2.2} /> Start a sighting
+      </motion.button>
+      <motion.button
+        whileTap={{ scale: 0.97 }}
+        onClick={onUpload}
+        className="flex h-14 w-[88%] max-w-md items-center justify-center gap-2 rounded-full border bg-white text-base font-semibold"
+        style={{ color: "#4a6b3a", borderColor: "rgba(74,107,58,0.15)" }}
+      >
+        <Upload className="h-5 w-5" strokeWidth={2.2} /> Upload a previous photo
+      </motion.button>
+    </motion.div>
+  );
+}
+
+function Hero() {
   return (
     <div className="text-center">
       <motion.div
         initial={{ scale: 0.92, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }}
-        className="mx-auto mt-2 max-w-sm"
+        className="mx-auto mt-0 max-w-[15rem]"
       >
         <img
           src={heroAnimals}
@@ -281,28 +314,6 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
         Snap a photo and Wildlog names the species, where it lives, and one thing
         worth knowing — then keeps it in your journal.
       </motion.p>
-
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.45 }}
-        className="mt-8 flex flex-col items-center gap-3"
-      >
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={onCamera}
-          className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-semibold text-primary-foreground shadow-[0_6px_18px_-8px_rgba(60,50,72,0.45)] hover:bg-primary/90"
-        >
-          <Camera className="h-5 w-5" /> Log a sighting
-        </motion.button>
-        <button
-          onClick={onUpload}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-        >
-          <Upload className="h-4 w-4" /> Upload a photo instead
-        </button>
-      </motion.div>
     </div>
   );
 }
