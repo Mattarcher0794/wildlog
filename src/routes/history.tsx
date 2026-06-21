@@ -218,8 +218,8 @@ function HistoryPage() {
                           initial={{ opacity: 0, y: 12 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: Math.min(i, 8) * 0.04, duration: 0.3 }}
-                          whileHover={{ scale: 1.01 }}
-                          className="flex items-start gap-4 overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-sm"
+                          whileHover={{ scale: 1.01, rotate: -0.4 }}
+                          className="card-pop flex items-start gap-4 overflow-hidden rounded-2xl bg-card p-3"
                         >
                           <motion.img
                             whileHover={{ scale: 1.06 }}
@@ -227,10 +227,10 @@ function HistoryPage() {
                             src={s.thumbnail}
                             alt={s.result.commonName}
                             loading="lazy"
-                            className="h-24 w-24 flex-shrink-0 rounded-xl object-cover"
+                            className="h-24 w-24 flex-shrink-0 rounded-xl border-2 border-border object-cover"
                           />
                           <div className="min-w-0 flex-1">
-                            <h3 className="font-display text-lg font-semibold leading-tight">
+                            <h3 className="font-display text-lg font-bold leading-tight">
                               {s.result.commonName}
                             </h3>
                             {s.result.scientificName && (
