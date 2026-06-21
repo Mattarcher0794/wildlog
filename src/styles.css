@@ -30,56 +30,67 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --font-display: "Fraunces", ui-serif, Georgia, serif;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-sunny: var(--sunny);
+  --color-teal: var(--teal);
+  --color-sky: var(--sky);
+  --font-display: "Fredoka", ui-rounded, system-ui, sans-serif;
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
-  --radius: 0.875rem;
-  /* Warm cream paper */
-  --background: oklch(0.972 0.018 85);
-  --foreground: oklch(0.255 0.03 50);
-  --card: oklch(0.985 0.012 85);
-  --card-foreground: oklch(0.255 0.03 50);
-  --popover: oklch(0.985 0.012 85);
-  --popover-foreground: oklch(0.255 0.03 50);
-  /* Deep forest green */
-  --primary: oklch(0.36 0.06 155);
-  --primary-foreground: oklch(0.97 0.018 85);
-  /* Muted terracotta */
-  --secondary: oklch(0.92 0.04 55);
-  --secondary-foreground: oklch(0.36 0.06 155);
-  --muted: oklch(0.93 0.02 75);
-  --muted-foreground: oklch(0.48 0.03 60);
-  --accent: oklch(0.65 0.14 40);
-  --accent-foreground: oklch(0.98 0.012 85);
-  --destructive: oklch(0.55 0.2 27);
-  --destructive-foreground: oklch(0.98 0.012 85);
-  --border: oklch(0.88 0.02 70);
+  --radius: 1.25rem;
+  /* Crisp warm off-white */
+  --background: oklch(0.985 0.008 95);
+  --foreground: oklch(0.22 0.03 30);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.03 30);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.03 30);
+  /* Coral red — the fox */
+  --primary: oklch(0.66 0.18 28);
+  --primary-foreground: oklch(0.99 0.005 95);
+  /* Sunny yellow */
+  --secondary: oklch(0.92 0.1 95);
+  --secondary-foreground: oklch(0.32 0.05 40);
+  --muted: oklch(0.95 0.012 95);
+  --muted-foreground: oklch(0.5 0.03 40);
+  /* Teal pop */
+  --accent: oklch(0.7 0.13 195);
+  --accent-foreground: oklch(0.2 0.04 220);
+  --destructive: oklch(0.58 0.21 27);
+  --destructive-foreground: oklch(0.99 0.005 95);
+  --border: oklch(0.22 0.03 30);
   --input: oklch(0.88 0.02 70);
-  --ring: oklch(0.65 0.14 40);
+  --ring: oklch(0.66 0.18 28);
+  /* Extra fun accents */
+  --sunny: oklch(0.85 0.16 90);
+  --teal: oklch(0.7 0.13 195);
+  --sky: oklch(0.72 0.13 235);
 }
 
 .dark {
-  --background: oklch(0.18 0.02 60);
-  --foreground: oklch(0.95 0.015 85);
-  --card: oklch(0.22 0.02 60);
-  --card-foreground: oklch(0.95 0.015 85);
-  --popover: oklch(0.22 0.02 60);
-  --popover-foreground: oklch(0.95 0.015 85);
-  --primary: oklch(0.7 0.09 155);
-  --primary-foreground: oklch(0.18 0.02 60);
-  --secondary: oklch(0.28 0.03 60);
-  --secondary-foreground: oklch(0.95 0.015 85);
-  --muted: oklch(0.28 0.03 60);
-  --muted-foreground: oklch(0.72 0.02 75);
-  --accent: oklch(0.65 0.14 40);
-  --accent-foreground: oklch(0.98 0.012 85);
-  --destructive: oklch(0.55 0.2 27);
-  --destructive-foreground: oklch(0.98 0.012 85);
-  --border: oklch(1 0 0 / 12%);
+  --background: oklch(0.2 0.025 30);
+  --foreground: oklch(0.96 0.01 95);
+  --card: oklch(0.25 0.025 30);
+  --card-foreground: oklch(0.96 0.01 95);
+  --popover: oklch(0.25 0.025 30);
+  --popover-foreground: oklch(0.96 0.01 95);
+  --primary: oklch(0.7 0.17 30);
+  --primary-foreground: oklch(0.16 0.02 30);
+  --secondary: oklch(0.32 0.05 95);
+  --secondary-foreground: oklch(0.96 0.01 95);
+  --muted: oklch(0.3 0.03 40);
+  --muted-foreground: oklch(0.74 0.02 75);
+  --accent: oklch(0.7 0.13 195);
+  --accent-foreground: oklch(0.16 0.03 220);
+  --destructive: oklch(0.58 0.21 27);
+  --destructive-foreground: oklch(0.99 0.005 95);
+  --border: oklch(0.96 0.01 95 / 18%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.65 0.14 40);
+  --ring: oklch(0.7 0.17 30);
+  --sunny: oklch(0.85 0.16 90);
+  --teal: oklch(0.7 0.13 195);
+  --sky: oklch(0.72 0.13 235);
 }
 
 @layer base {
@@ -92,12 +103,19 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     background-image:
-      radial-gradient(oklch(0.36 0.06 155 / 0.04) 1px, transparent 1px);
-    background-size: 18px 18px;
+      radial-gradient(oklch(0.66 0.18 28 / 0.05) 1.5px, transparent 1.5px);
+    background-size: 22px 22px;
   }
 
   h1, h2, h3, .font-display {
     font-family: var(--font-display);
+    font-weight: 600;
     letter-spacing: -0.01em;
   }
+}
+
+/* Chunky playful outline used on cards and chips for the sticker look */
+@utility card-pop {
+  border-width: 2px;
+  box-shadow: 4px 4px 0 0 var(--color-border);
 }
