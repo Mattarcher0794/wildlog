@@ -1,6 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "motion/react";
 import { Camera, BookOpen, User } from "lucide-react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 const tabs = [
   { to: "/", label: "Log", icon: Camera },
@@ -12,23 +14,32 @@ const tabs = [
 export function TabBar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const reduceMotion = useReducedMotion();
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 
-  return (
-    <motion.nav
+  useEffect(() => {
+    setPortalTarget(document.body);
+  }, []);
+
+  const nav = (
+    <nav
       aria-label="Primary"
-      initial={{ y: 80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ type: "spring", stiffness: 220, damping: 26, delay: 0.1 }}
-      className="fixed inset-x-0 z-30 flex justify-center"
-      style={{ bottom: "calc(20px + env(safe-area-inset-bottom))" }}
+      className="fixed inset-x-0 z-50 flex justify-center"
+      style={{
+        bottom: "calc(20px + env(safe-area-inset-bottom))",
+        pointerEvents: "none",
+      }}
     >
-      <ul
+      <motion.ul
+        initial={{ y: reduceMotion ? 0 : 80, opacity: reduceMotion ? 1 : 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 220, damping: 26, delay: 0.1 }}
         className="flex w-[88%] max-w-md items-center justify-around rounded-full p-2"
         style={{
           backgroundColor: "rgba(62, 87, 65, 0.9)",
           backdropFilter: "blur(30px)",
           WebkitBackdropFilter: "blur(30px)",
           boxShadow: "0 12px 30px -8px rgba(0,0,0,0.2)",
+          pointerEvents: "auto",
         }}
       >
         {tabs.map(({ to, label, icon: Icon }) => {
@@ -76,7 +87,9 @@ export function TabBar() {
             </li>
           );
         })}
-      </ul>
-    </motion.nav>
+      </motion.ul>
+    </nav>
   );
+
+  return portalTarget ? createPortal(nav, portalTarget) : nav;
 }
