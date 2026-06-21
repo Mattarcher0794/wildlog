@@ -1,33 +1,31 @@
 ## Goal
 
-Make the sign-in email show the **6-digit code** instead of the "Log In" magic-link button. The in-app screens already accept and verify a 6-digit code correctly — the only thing wrong is the email content, which is still Lovable's default magic-link template.
+On the home screen, the hero illustration is too tall and pushes the headline, subcopy, and the primary "Log a sighting" button below the fold. Shrink the illustration and make the CTA stick above the bottom tab bar so the core action is always reachable.
 
-## Why this is happening
+All changes are scoped to the idle-state `Hero` component in `src/routes/_authenticated/index.tsx`. No backend, data, or copy changes.
 
-- `signInWithOtp` sends one auth email. The same email event carries **both** a magic link **and** a 6-digit code (`{{ .Token }}`).
-- Right now the project uses Lovable's **default** auth email template, which displays the link as a "Log In" button and never prints the code.
-- The default template can't be edited in place. To put the code in the email, the project needs its own auth email templates, and sending custom auth emails requires a verified sending domain.
+## Changes
 
-This is possible. It needs one setup step from you (connecting a sending domain), then template changes from me.
+### 1. Shrink the hero illustration
+In the `Hero` component, the illustration container currently uses `mx-auto mt-2 max-w-sm` (≈384px) with a full-width `<img>`.
 
-## Steps
+- Reduce the container to roughly 60% width with a smaller cap: `mx-auto mt-1 w-3/5 max-w-[260px]`.
+- Tighten the surrounding vertical spacing proportionally (smaller top margin; reduce the headline's `mt-4` slightly) so headline + subcopy fit above the fold on a standard phone (~844–852px logical).
+- Keep the artwork centered and uncropped (only the container resizes; the `<img>` stays `w-full h-auto`).
 
-1. **Set up an email sending domain.** I'll open the email setup dialog. You already own `wildlog.life`, so we can send from that (e.g. a subdomain like `mail.wildlog.life`). This adds a few DNS records; sending activates once DNS verifies.
+### 2. Make the "Log a sighting" CTA sticky
+The CTA block (primary button + "Upload a photo instead" link) currently sits in normal flow after the subcopy.
 
-2. **Scaffold custom auth email templates.** This generates branded, editable email templates plus the hook that delivers them.
+- Wrap the primary "Log a sighting" button area in a sticky container pinned just above the tab bar:
+  - `position: sticky` with `bottom` ≈ `calc(64px + env(safe-area-inset-bottom, 0px))` to clear the actual tab bar height (the tab bar is ~56–64px tall, not 72px).
+  - Add `z-10` and a soft drop shadow so it separates from content scrolling underneath.
+- Keep the "Upload a photo instead" link directly with/under the button as today.
+- This only applies to the idle hero; the capture/result phase is untouched.
 
-3. **Rewrite the sign-in email to lead with the code.** I'll edit the magic-link and signup templates so the email prominently shows the **6-digit code** (large, centered, monospace), with on-voice Wildlog copy ("Enter this code to sign in"), the cream/moss/plum brand styling, and the Wildlog wordmark. The link button is removed (or demoted to a small fallback) so the code is the clear primary action — matching the in-app "Check your email" screen.
+### 3. Verify
+- Drive the live preview with Playwright at a ~390×844 mobile viewport, screenshot the home screen, and confirm: logo bar → shrunk illustration → headline → subcopy → CTA are all visible without scrolling, the CTA stays pinned above the tab bar when scrolling (with the recent-sightings strip present), and the illustration isn't cropped.
 
-4. **Deploy and verify.** Deploy the email hook, then I'll confirm a real sign-in email renders the code. Final activation depends on DNS verification, which you can monitor in Cloud → Emails.
-
-## Notes / trade-offs
-
-- Until the new sending domain's DNS verifies, emails continue via the current default template. Once verified, the code-based email takes over automatically.
-- No app code changes are needed for the OTP flow itself — it already calls `verifyOtp({ type: "email" })`. This is purely an email-template fix.
-- No new tables or schema changes.
-
-## Technical detail
-
-- Uses `email_domain--scaffold_auth_email_templates`, which creates `supabase/functions/auth-email-hook/` and React Email templates under `supabase/functions/_shared/email-templates/`.
-- The auth hook payload exposes `email_data.token` (the 6-digit OTP); the magic-link/signup templates will render that value as the headline code.
-- Brand tokens pulled from `src/styles.css`; email `Body` background stays white per email-client constraints, with brand colors on the inner card.
+## Technical notes
+- File: `src/routes/_authenticated/index.tsx` (`Hero` function, lines ~250–308).
+- Use Tailwind utility classes consistent with the existing code (e.g. `sticky bottom-[calc(64px+env(safe-area-inset-bottom))] z-10`) rather than introducing the doc's raw CSS class names — the codebase uses Tailwind, not custom CSS classes.
+- The bottom tab bar (`TabBar.tsx`) is `position: fixed`; no change needed there. The `main` already has `pb-28` bottom padding which keeps content clear of the bar.
