@@ -47,9 +47,7 @@ export const verifyAuthEmailCode = createServerFn({ method: "POST" })
         .order("created_at", { ascending: false })
         .limit(50);
 
-      const match = rows?.find(
-        (row) => getStringField(row.metadata, "display_token") === code,
-      );
+      const match = rows?.find((row) => getStringField(row.metadata, "display_token") === code);
       const providerToken = getStringField(match?.metadata, "provider_token");
       if (providerToken) tokenToVerify = providerToken;
     }
@@ -65,9 +63,7 @@ export const verifyAuthEmailCode = createServerFn({ method: "POST" })
     });
 
     if (error || !verified.session?.access_token || !verified.session.refresh_token) {
-      throw new Error(
-        "That code's wrong or expired. Try again, or send a new one.",
-      );
+      throw new Error("That code's wrong or expired. Try again, or send a new one.");
     }
 
     return {
