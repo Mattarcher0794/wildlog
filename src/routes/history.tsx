@@ -215,7 +215,7 @@ function HistoryPage() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: Math.min(i, 8) * 0.04, duration: 0.3 }}
                           whileHover={{ scale: 1.01, rotate: -0.4 }}
-                          className="card-soft flex items-start gap-4 overflow-hidden rounded-2xl bg-card p-3"
+                          className="card-journal flex items-start gap-4 bg-card p-3"
                         >
                           <motion.img
                             whileHover={{ scale: 1.06 }}
@@ -223,12 +223,19 @@ function HistoryPage() {
                             src={s.thumbnail}
                             alt={s.result.commonName}
                             loading="lazy"
-                            className="blob h-24 w-24 flex-shrink-0 object-cover"
+                            className={`${i % 2 === 0 ? "blob" : "blob-alt"} h-24 w-24 flex-shrink-0 object-cover`}
                           />
                           <div className="min-w-0 flex-1">
-                            <h3 className="text-lg font-bold leading-tight text-foreground">
-                              {s.result.commonName}
-                            </h3>
+                            <div className="flex items-start justify-between gap-2">
+                              <h3 className="text-lg font-bold leading-tight text-foreground">
+                                {s.result.commonName}
+                              </h3>
+                              {s.id === sightings[0]?.id && (
+                                <span className="flex-shrink-0 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground">
+                                  Just logged
+                                </span>
+                              )}
+                            </div>
                             {s.result.scientificName && (
                               <p className="text-xs italic text-muted-foreground">
                                 {s.result.scientificName}
