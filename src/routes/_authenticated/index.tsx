@@ -228,13 +228,6 @@ function Home() {
           if (f) handleFile(f);
         }}
       />
-
-      {phase === "idle" && (
-        <CtaDock
-          onCamera={() => fileRef.current?.click()}
-          onUpload={() => uploadRef.current?.click()}
-        />
-      )}
     </main>
   );
 }
