@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { Mail, ArrowLeft } from "lucide-react";
+import { Mail, Phone, ArrowLeft } from "lucide-react";
 
 import { Wordmark } from "@/components/Brand";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
@@ -24,13 +24,29 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-type Step = "email" | "code";
+type Method = "email" | "phone";
+type Step = "contact" | "code";
+
+function normalizePhone(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  // Keep a leading +, strip everything else that isn't a digit.
+  const hasPlus = trimmed.startsWith("+");
+  const digits = trimmed.replace(/\D/g, "");
+  return hasPlus ? `+${digits}` : digits;
+}
+
+function isValidPhone(value: string): boolean {
+  return /^\+[1-9]\d{6,14}$/.test(value);
+}
 
 function AuthPage() {
   const navigate = useNavigate();
   const verifyAuthCode = useServerFn(verifyAuthEmailCode);
-  const [step, setStep] = useState<Step>("email");
+  const [method, setMethod] = useState<Method>("email");
+  const [step, setStep] = useState<Step>("contact");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -59,9 +75,41 @@ function AuthPage() {
     return () => clearTimeout(t);
   }, [cooldown]);
 
+  function switchMethod(next: Method) {
+    if (next === method) return;
+    setMethod(next);
+    setStep("contact");
+    setError(null);
+    setCode("");
+  }
+
   async function sendCode(e?: React.FormEvent) {
     e?.preventDefault();
     setError(null);
+
+    if (method === "phone") {
+      const normalized = normalizePhone(phone);
+      if (!isValidPhone(normalized)) {
+        setError("Enter your number with country code, e.g. +44 7700 900123.");
+        return;
+      }
+      setPhone(normalized);
+      setBusy(true);
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: normalized,
+        options: { shouldCreateUser: true },
+      });
+      setBusy(false);
+      if (error) {
+        setError(error.message);
+        return;
+      }
+      setStep("code");
+      setCode("");
+      setCooldown(60);
+      return;
+    }
+
     setBusy(true);
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
@@ -85,6 +133,17 @@ function AuthPage() {
     setError(null);
     setBusy(true);
     try {
+      if (method === "phone") {
+        const { error } = await supabase.auth.verifyOtp({
+          phone: normalizePhone(phone),
+          token,
+          type: "sms",
+        });
+        if (error) throw error;
+        navigate({ to: "/", replace: true });
+        return;
+      }
+
       const session = await verifyAuthCode({
         data: { email: email.trim(), code: token },
       });
@@ -106,6 +165,8 @@ function AuthPage() {
     if (value.length === 6) verifyCode(value);
   }
 
+  const sentTo = method === "phone" ? normalizePhone(phone) : email;
+
   return (
     <main className="flex min-h-screen flex-col bg-background px-5">
       <header className="flex items-center justify-center pt-10">
@@ -119,29 +180,68 @@ function AuthPage() {
           transition={{ duration: 0.4 }}
           className="mx-auto w-full max-w-sm"
         >
-          {step === "email" ? (
+          {step === "contact" ? (
             <>
               <h1 className="font-display text-4xl text-foreground">Sign in to start logging</h1>
               <p className="mt-3 text-sm text-muted-foreground">
-                We'll email you a 6-digit code — no password to remember.
+                We'll send you a 6-digit code — no password to remember.
               </p>
-              <form onSubmit={sendCode} className="mt-8 space-y-3">
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@email.com"
-                  className="w-full rounded-2xl border border-input bg-card px-4 py-3.5 text-base outline-none ring-ring focus:border-ring focus:ring-2"
-                />
+
+              <div className="mt-6 grid grid-cols-2 gap-1 rounded-full bg-secondary p-1">
+                <button
+                  type="button"
+                  onClick={() => switchMethod("email")}
+                  className={`inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                    method === "email"
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  <Mail className="h-4 w-4" /> Email
+                </button>
+                <button
+                  type="button"
+                  onClick={() => switchMethod("phone")}
+                  className={`inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                    method === "phone"
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  <Phone className="h-4 w-4" /> Phone
+                </button>
+              </div>
+
+              <form onSubmit={sendCode} className="mt-6 space-y-3">
+                {method === "email" ? (
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@email.com"
+                    className="w-full rounded-2xl border border-input bg-card px-4 py-3.5 text-base outline-none ring-ring focus:border-ring focus:ring-2"
+                  />
+                ) : (
+                  <input
+                    type="tel"
+                    required
+                    inputMode="tel"
+                    autoComplete="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+44 7700 900123"
+                    className="w-full rounded-2xl border border-input bg-card px-4 py-3.5 text-base outline-none ring-ring focus:border-ring focus:ring-2"
+                  />
+                )}
                 {error && <p className="text-sm text-destructive">{error}</p>}
                 <motion.button
                   whileTap={{ scale: 0.98 }}
                   type="submit"
-                  disabled={busy || !email.trim()}
+                  disabled={busy || (method === "email" ? !email.trim() : !phone.trim())}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-semibold text-primary-foreground shadow-[0_6px_18px_-8px_rgba(60,50,72,0.45)] hover:bg-primary/90 disabled:opacity-60"
                 >
-                  <Mail className="h-5 w-5" />
+                  {method === "email" ? <Mail className="h-5 w-5" /> : <Phone className="h-5 w-5" />}
                   {busy ? "Sending…" : "Send code"}
                 </motion.button>
               </form>
@@ -153,12 +253,18 @@ function AuthPage() {
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 className="mx-auto flex h-20 w-20 items-center justify-center blob bg-peach"
               >
-                <Mail className="h-8 w-8 text-plum" />
+                {method === "phone" ? (
+                  <Phone className="h-8 w-8 text-plum" />
+                ) : (
+                  <Mail className="h-8 w-8 text-plum" />
+                )}
               </motion.div>
-              <h1 className="mt-6 font-display text-3xl text-foreground">Check your email</h1>
+              <h1 className="mt-6 font-display text-3xl text-foreground">
+                {method === "phone" ? "Check your messages" : "Check your email"}
+              </h1>
               <p className="mt-3 text-sm text-muted-foreground">
                 Enter the 6-digit code we sent to{" "}
-                <span className="font-semibold text-foreground">{email}</span>.
+                <span className="font-semibold text-foreground">{sentTo}</span>.
               </p>
 
               <div className="mt-8 flex justify-center">
@@ -194,13 +300,14 @@ function AuthPage() {
               <div>
                 <button
                   onClick={() => {
-                    setStep("email");
+                    setStep("contact");
                     setError(null);
                     setCode("");
                   }}
                   className="mt-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                 >
-                  <ArrowLeft className="h-4 w-4" /> Use a different email
+                  <ArrowLeft className="h-4 w-4" />{" "}
+                  {method === "phone" ? "Use a different number" : "Use a different email"}
                 </button>
               </div>
             </div>
