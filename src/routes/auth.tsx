@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { Mail, ArrowLeft } from "lucide-react";
 
 import { Wordmark } from "@/components/Brand";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { supabase } from "@/integrations/supabase/client";
 import { ONBOARDED_KEY } from "./onboarding";
 
@@ -21,13 +22,17 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+type Step = "email" | "code";
+
 function AuthPage() {
   const navigate = useNavigate();
+  const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const verifyingRef = useRef(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -51,14 +56,13 @@ function AuthPage() {
     return () => clearTimeout(t);
   }, [cooldown]);
 
-  async function sendLink(e?: React.FormEvent) {
+  async function sendCode(e?: React.FormEvent) {
     e?.preventDefault();
     setError(null);
     setBusy(true);
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {
-        emailRedirectTo: window.location.origin,
         shouldCreateUser: true,
       },
     });
@@ -67,8 +71,35 @@ function AuthPage() {
       setError(error.message);
       return;
     }
-    setSent(true);
+    setStep("code");
+    setCode("");
     setCooldown(60);
+  }
+
+  async function verifyCode(token: string) {
+    if (verifyingRef.current) return;
+    verifyingRef.current = true;
+    setError(null);
+    setBusy(true);
+    const { error } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token,
+      type: "email",
+    });
+    setBusy(false);
+    verifyingRef.current = false;
+    if (error) {
+      setError("That code's wrong or expired. Try again, or send a new one.");
+      setCode("");
+      return;
+    }
+    navigate({ to: "/", replace: true });
+  }
+
+  function onCodeChange(value: string) {
+    setCode(value);
+    setError(null);
+    if (value.length === 6) verifyCode(value);
   }
 
   return (
@@ -84,15 +115,15 @@ function AuthPage() {
           transition={{ duration: 0.4 }}
           className="mx-auto w-full max-w-sm"
         >
-          {!sent ? (
+          {step === "email" ? (
             <>
               <h1 className="font-display text-4xl text-foreground">
                 Sign in to start logging
               </h1>
               <p className="mt-3 text-sm text-muted-foreground">
-                We'll email you a magic link — no password to remember.
+                We'll email you a 6-digit code — no password to remember.
               </p>
-              <form onSubmit={sendLink} className="mt-8 space-y-3">
+              <form onSubmit={sendCode} className="mt-8 space-y-3">
                 <input
                   type="email"
                   required
@@ -109,7 +140,7 @@ function AuthPage() {
                   className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-semibold text-primary-foreground shadow-[0_6px_18px_-8px_rgba(60,50,72,0.45)] hover:bg-primary/90 disabled:opacity-60"
                 >
                   <Mail className="h-5 w-5" />
-                  {busy ? "Sending…" : "Send magic link"}
+                  {busy ? "Sending…" : "Send code"}
                 </motion.button>
               </form>
             </>
@@ -126,22 +157,50 @@ function AuthPage() {
                 Check your email
               </h1>
               <p className="mt-3 text-sm text-muted-foreground">
-                Tap the link we sent to{" "}
-                <span className="font-semibold text-foreground">{email}</span> to
-                jump back in.
+                Enter the 6-digit code we sent to{" "}
+                <span className="font-semibold text-foreground">{email}</span>.
               </p>
+
+              <div className="mt-8 flex justify-center">
+                <InputOTP
+                  maxLength={6}
+                  value={code}
+                  onChange={onCodeChange}
+                  disabled={busy}
+                  autoFocus
+                >
+                  <InputOTPGroup className="gap-2">
+                    {[0, 1, 2, 3, 4, 5].map((i) => (
+                      <InputOTPSlot
+                        key={i}
+                        index={i}
+                        className="h-14 w-12 rounded-2xl border border-input bg-card text-xl font-semibold first:rounded-l-2xl last:rounded-r-2xl"
+                      />
+                    ))}
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+
+              {error && (
+                <p className="mt-4 text-sm text-destructive">{error}</p>
+              )}
+              {busy && (
+                <p className="mt-4 text-sm text-muted-foreground">Confirming…</p>
+              )}
+
               <button
-                onClick={() => sendLink()}
+                onClick={() => sendCode()}
                 disabled={cooldown > 0 || busy}
                 className="mt-6 text-sm font-semibold text-primary hover:underline disabled:opacity-50"
               >
-                {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend link"}
+                {cooldown > 0 ? `Send a new code in ${cooldown}s` : "Send a new code"}
               </button>
               <div>
                 <button
                   onClick={() => {
-                    setSent(false);
+                    setStep("email");
                     setError(null);
+                    setCode("");
                   }}
                   className="mt-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                 >
