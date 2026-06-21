@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedUsernameRouteImport } from './routes/_authenticated/username'
+import { Route as AuthenticatedMapRouteImport } from './routes/_authenticated/map'
 import { Route as AuthenticatedJournalRouteImport } from './routes/_authenticated/journal'
 
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -40,6 +41,11 @@ const AuthenticatedUsernameRoute = AuthenticatedUsernameRouteImport.update({
   path: '/username',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMapRoute = AuthenticatedMapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedJournalRoute = AuthenticatedJournalRouteImport.update({
   id: '/journal',
   path: '/journal',
@@ -51,12 +57,14 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/journal': typeof AuthenticatedJournalRoute
+  '/map': typeof AuthenticatedMapRoute
   '/username': typeof AuthenticatedUsernameRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/journal': typeof AuthenticatedJournalRoute
+  '/map': typeof AuthenticatedMapRoute
   '/username': typeof AuthenticatedUsernameRoute
   '/': typeof AuthenticatedIndexRoute
 }
@@ -66,20 +74,22 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/_authenticated/journal': typeof AuthenticatedJournalRoute
+  '/_authenticated/map': typeof AuthenticatedMapRoute
   '/_authenticated/username': typeof AuthenticatedUsernameRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/onboarding' | '/journal' | '/username'
+  fullPaths: '/' | '/auth' | '/onboarding' | '/journal' | '/map' | '/username'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/onboarding' | '/journal' | '/username' | '/'
+  to: '/auth' | '/onboarding' | '/journal' | '/map' | '/username' | '/'
   id:
     | '__root__'
     | '/_authenticated'
     | '/auth'
     | '/onboarding'
     | '/_authenticated/journal'
+    | '/_authenticated/map'
     | '/_authenticated/username'
     | '/_authenticated/'
   fileRoutesById: FileRoutesById
@@ -127,6 +137,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsernameRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/map': {
+      id: '/_authenticated/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof AuthenticatedMapRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/journal': {
       id: '/_authenticated/journal'
       path: '/journal'
@@ -139,12 +156,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedJournalRoute: typeof AuthenticatedJournalRoute
+  AuthenticatedMapRoute: typeof AuthenticatedMapRoute
   AuthenticatedUsernameRoute: typeof AuthenticatedUsernameRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedJournalRoute: AuthenticatedJournalRoute,
+  AuthenticatedMapRoute: AuthenticatedMapRoute,
   AuthenticatedUsernameRoute: AuthenticatedUsernameRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
