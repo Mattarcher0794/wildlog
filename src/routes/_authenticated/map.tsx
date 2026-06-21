@@ -3,8 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 
-import { Wordmark } from "@/components/Brand";
-import { TabBar } from "@/components/TabBar";
 import { SightingDetailModal, type DetailSighting } from "@/components/SightingDetail";
 import { SightingsMap } from "@/components/SightingsMap";
 import { useRequireUsername } from "@/hooks/use-profile";
@@ -32,16 +30,8 @@ function MapPage() {
 
   return (
     <main className="min-h-screen pb-28">
-      <motion.header
-        initial={{ y: -16, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4 }}
-        className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6"
-      >
-        <Wordmark />
-      </motion.header>
-
       <section className="mx-auto max-w-3xl px-5 pt-8">
+
         <h1 className="font-display text-3xl">Sightings map</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {located.length === 0
@@ -77,7 +67,6 @@ function MapPage() {
         sighting={active as DetailSighting | null}
         onClose={() => setActive(null)}
       />
-      <TabBar />
     </main>
   );
 }

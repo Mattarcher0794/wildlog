@@ -6,8 +6,6 @@ import { AnimatePresence, motion } from "motion/react";
 import { Camera, RotateCcw, Upload, X, Lock, Globe } from "lucide-react";
 
 import heroAnimals from "@/assets/hero-animals.jpg";
-import { Wordmark } from "@/components/Brand";
-import { TabBar } from "@/components/TabBar";
 import { useRequireUsername } from "@/hooks/use-profile";
 import { identifyAnimal, type AnimalIdentification } from "@/lib/identify.functions";
 import { fileToDataUrl, getCurrentLocation, makeThumbnail } from "@/lib/sightings";
@@ -96,19 +94,8 @@ function Home() {
 
   return (
     <main className="min-h-screen pb-28">
-      <motion.header
-        initial={{ y: -16, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4 }}
-        className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6"
-      >
-        <Wordmark />
-        <span className="rounded-full border-[1.5px] border-border px-3 py-1 font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
-          Field journal
-        </span>
-      </motion.header>
-
       <section className="mx-auto max-w-3xl px-5 pt-8">
+
         <AnimatePresence mode="wait">
           {phase === "idle" ? (
             <motion.div
@@ -245,8 +232,6 @@ function Home() {
           onUpload={() => uploadRef.current?.click()}
         />
       )}
-
-      <TabBar />
     </main>
   );
 }

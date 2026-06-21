@@ -5,8 +5,7 @@ import { motion } from "motion/react";
 import { Share2, LogOut, Check } from "lucide-react";
 
 import { AccountContact } from "@/components/AccountContact";
-import { BlobAvatar, Wordmark } from "@/components/Brand";
-import { TabBar } from "@/components/TabBar";
+import { BlobAvatar } from "@/components/Brand";
 import { useMyProfile, useRequireUsername } from "@/hooks/use-profile";
 import { supabase } from "@/integrations/supabase/client";
 import { listMySightings } from "@/lib/sightings.functions";
@@ -58,16 +57,8 @@ function ProfilePage() {
 
   return (
     <main className="min-h-screen pb-28">
-      <motion.header
-        initial={{ y: -16, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4 }}
-        className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6"
-      >
-        <Wordmark />
-      </motion.header>
-
       <section className="mx-auto max-w-3xl px-5 pt-10">
+
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -137,8 +128,6 @@ function ProfilePage() {
           </button>
         </motion.div>
       </section>
-
-      <TabBar />
     </main>
   );
 }
