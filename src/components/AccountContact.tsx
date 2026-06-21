@@ -1,20 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Mail, Phone, Check, Plus } from "lucide-react";
 
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { supabase } from "@/integrations/supabase/client";
-
-function normalizePhone(value: string): string {
-  const trimmed = value.trim();
-  if (!trimmed) return "";
-  const hasPlus = trimmed.startsWith("+");
-  const digits = trimmed.replace(/\D/g, "");
-  return hasPlus ? `+${digits}` : digits;
-}
-
-function isValidPhone(value: string): boolean {
-  return /^\+[1-9]\d{6,14}$/.test(value);
-}
 
 function friendlyAuthError(err: unknown, fallback: string): string {
   const raw =
@@ -29,7 +16,6 @@ function friendlyAuthError(err: unknown, fallback: string): string {
   }
   return msg;
 }
-
 
 export function AccountContact() {
   const [email, setEmail] = useState<string | null>(null);
@@ -60,7 +46,7 @@ export function AccountContact() {
 
       <div className="mt-4 space-y-3">
         <EmailRow email={email} onSaved={refresh} />
-        <PhoneRow phone={phone} onSaved={refresh} />
+        <PhoneRow phone={phone} />
       </div>
     </div>
   );
@@ -146,148 +132,37 @@ function EmailRow({ email, onSaved }: { email: string | null; onSaved: () => voi
   );
 }
 
-function PhoneRow({ phone, onSaved }: { phone: string | null; onSaved: () => void }) {
-  const [editing, setEditing] = useState(false);
-  const [stage, setStage] = useState<"input" | "code">("input");
-  const [value, setValue] = useState("");
-  const [code, setCode] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const verifyingRef = useRef(false);
-
-  async function sendCode(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    const normalized = normalizePhone(value);
-    if (!isValidPhone(normalized)) {
-      setError("Enter your number with country code, e.g. +44 7700 900123.");
-      return;
-    }
-    setValue(normalized);
-    setBusy(true);
-    const { error } = await supabase.auth.updateUser({ phone: normalized });
-    setBusy(false);
-    if (error) {
-      setError(
-        friendlyAuthError(error, "Text-message verification isn't available right now."),
-      );
-      return;
-    }
-    setStage("code");
-    setCode("");
-  }
-
-  async function verify(token: string) {
-    if (verifyingRef.current) return;
-    verifyingRef.current = true;
-    setError(null);
-    setBusy(true);
-    const { error } = await supabase.auth.verifyOtp({
-      phone: normalizePhone(value),
-      token,
-      type: "phone_change",
-    });
-    setBusy(false);
-    verifyingRef.current = false;
-    if (error) {
-      setError("That code's wrong or expired. Try again.");
-      setCode("");
-      return;
-    }
-    setEditing(false);
-    setStage("input");
-    onSaved();
-  }
-
-  function onCodeChange(v: string) {
-    setCode(v);
-    setError(null);
-    if (v.length === 6) verify(v);
-  }
+function PhoneRow({ phone }: { phone: string | null }) {
+  const [showSoon, setShowSoon] = useState(false);
 
   if (phone) {
-    return (
-      <Row icon={<Phone className="h-4 w-4" />} label="Phone" value={phone} verified />
-    );
+    return <Row icon={<Phone className="h-4 w-4" />} label="Phone" value={phone} verified />;
   }
 
-  if (!editing) {
+  if (showSoon) {
     return (
-      <AddRow
-        icon={<Phone className="h-4 w-4" />}
-        label="Add phone"
-        onClick={() => setEditing(true)}
-      />
-    );
-  }
-
-  if (stage === "code") {
-    return (
-      <div className="space-y-3">
-        <p className="text-sm text-muted-foreground">
-          Enter the 6-digit code we texted to{" "}
-          <span className="font-semibold text-foreground">{normalizePhone(value)}</span>.
-        </p>
-        <div className="flex justify-center">
-          <InputOTP maxLength={6} value={code} onChange={onCodeChange} disabled={busy} autoFocus>
-            <InputOTPGroup className="gap-2">
-              {[0, 1, 2, 3, 4, 5].map((i) => (
-                <InputOTPSlot
-                  key={i}
-                  index={i}
-                  className="h-12 w-10 shrink-0 rounded-2xl !border-l border-input bg-background text-lg font-semibold first:rounded-l-2xl last:rounded-r-2xl"
-                />
-              ))}
-            </InputOTPGroup>
-          </InputOTP>
+      <div className="rounded-2xl border border-dashed border-border bg-background px-4 py-3">
+        <div className="flex items-center gap-3">
+          <span className="text-muted-foreground">
+            <Phone className="h-4 w-4" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-foreground">Phone sign-in is coming soon</p>
+            <p className="text-xs text-muted-foreground">
+              You'll be able to add and verify a number here shortly.
+            </p>
+          </div>
         </div>
-        {error && <p className="text-sm text-destructive">{error}</p>}
-        <button
-          type="button"
-          onClick={() => {
-            setStage("input");
-            setError(null);
-            setCode("");
-          }}
-          className="text-sm text-muted-foreground hover:text-foreground"
-        >
-          Use a different number
-        </button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={sendCode} className="space-y-2">
-      <input
-        type="tel"
-        required
-        autoFocus
-        inputMode="tel"
-        autoComplete="tel"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="+44 7700 900123"
-        className="w-full rounded-2xl border border-input bg-background px-4 py-3 text-base outline-none ring-ring focus:border-ring focus:ring-2"
-      />
-      {error && <p className="text-sm text-destructive">{error}</p>}
-      <div className="flex gap-2">
-        <button
-          type="submit"
-          disabled={busy || !value.trim()}
-          className="inline-flex flex-1 items-center justify-center rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
-        >
-          {busy ? "Sending…" : "Send code"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setEditing(false)}
-          className="rounded-full border border-border px-4 py-2.5 text-sm text-muted-foreground"
-        >
-          Cancel
-        </button>
-      </div>
-    </form>
+    <AddRow
+      icon={<Phone className="h-4 w-4" />}
+      label="Add phone"
+      onClick={() => setShowSoon(true)}
+    />
   );
 }
 
