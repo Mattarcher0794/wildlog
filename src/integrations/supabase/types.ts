@@ -14,13 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          username: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id: string
+          username?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      sightings: {
+        Row: {
+          animal_group: string | null
+          common_name: string
+          confidence: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_animal: boolean
+          is_public: boolean
+          lat: number | null
+          lng: number | null
+          note: string | null
+          scientific_name: string | null
+          user_id: string
+        }
+        Insert: {
+          animal_group?: string | null
+          common_name: string
+          confidence?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_animal?: boolean
+          is_public?: boolean
+          lat?: number | null
+          lng?: number | null
+          note?: string | null
+          scientific_name?: string | null
+          user_id: string
+        }
+        Update: {
+          animal_group?: string | null
+          common_name?: string
+          confidence?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_animal?: boolean
+          is_public?: boolean
+          lat?: number | null
+          lng?: number | null
+          note?: string | null
+          scientific_name?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_public_profile: {
+        Args: { p_username: string }
+        Returns: {
+          created_at: string
+          sighting_count: number
+          species_count: number
+          username: string
+        }[]
+      }
+      get_public_sightings: {
+        Args: { p_username: string }
+        Returns: {
+          animal_group: string
+          common_name: string
+          created_at: string
+          description: string
+          id: string
+          image_url: string
+          lat: number
+          lng: number
+          scientific_name: string
+        }[]
+      }
+      username_available: { Args: { p_username: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
