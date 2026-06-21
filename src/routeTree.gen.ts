@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedUsernameRouteImport } from './routes/_authenticated/username'
+import { Route as AuthenticatedJournalRouteImport } from './routes/_authenticated/journal'
 
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
@@ -39,16 +40,23 @@ const AuthenticatedUsernameRoute = AuthenticatedUsernameRouteImport.update({
   path: '/username',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedJournalRoute = AuthenticatedJournalRouteImport.update({
+  id: '/journal',
+  path: '/journal',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/journal': typeof AuthenticatedJournalRoute
   '/username': typeof AuthenticatedUsernameRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/journal': typeof AuthenticatedJournalRoute
   '/username': typeof AuthenticatedUsernameRoute
   '/': typeof AuthenticatedIndexRoute
 }
@@ -57,19 +65,21 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/_authenticated/journal': typeof AuthenticatedJournalRoute
   '/_authenticated/username': typeof AuthenticatedUsernameRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/onboarding' | '/username'
+  fullPaths: '/' | '/auth' | '/onboarding' | '/journal' | '/username'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/onboarding' | '/username' | '/'
+  to: '/auth' | '/onboarding' | '/journal' | '/username' | '/'
   id:
     | '__root__'
     | '/_authenticated'
     | '/auth'
     | '/onboarding'
+    | '/_authenticated/journal'
     | '/_authenticated/username'
     | '/_authenticated/'
   fileRoutesById: FileRoutesById
@@ -117,15 +127,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsernameRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/journal': {
+      id: '/_authenticated/journal'
+      path: '/journal'
+      fullPath: '/journal'
+      preLoaderRoute: typeof AuthenticatedJournalRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedJournalRoute: typeof AuthenticatedJournalRoute
   AuthenticatedUsernameRoute: typeof AuthenticatedUsernameRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedJournalRoute: AuthenticatedJournalRoute,
   AuthenticatedUsernameRoute: AuthenticatedUsernameRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
