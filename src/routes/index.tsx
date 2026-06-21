@@ -2,11 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Camera, Feather, Loader2, RotateCcw, Upload, X } from "lucide-react";
+import { Camera, PawPrint, Loader2, RotateCcw, Upload, X } from "lucide-react";
 
-import heroBird from "@/assets/hero-bird.jpg";
+import heroAnimals from "@/assets/hero-animals.jpg";
 import { TabBar } from "@/components/TabBar";
-import { identifyBird, type BirdIdentification } from "@/lib/identify.functions";
+import { identifyAnimal, type AnimalIdentification } from "@/lib/identify.functions";
 import {
   fileToDataUrl,
   loadSightings,
@@ -18,16 +18,16 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Plumage — Snap a bird, learn its name" },
+      { title: "Wildeye — Snap any animal, learn its name" },
       {
         name: "description",
         content:
-          "Plumage identifies any bird from a single photo. Snap or upload, and your pocket field guide names the species in seconds.",
+          "Wildeye identifies any animal from a single photo — mammals, birds, reptiles, insects and more. Snap or upload, and your pocket field guide names the species in seconds.",
       },
-      { property: "og:title", content: "Plumage — Snap a bird, learn its name" },
+      { property: "og:title", content: "Wildeye — Snap any animal, learn its name" },
       {
         property: "og:description",
-        content: "AI-powered pocket field guide. Snap a bird, get the species.",
+        content: "AI-powered pocket field guide for every animal. Snap a photo, get the species.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -39,13 +39,13 @@ export const Route = createFileRoute("/")({
 type Phase = "idle" | "loading" | "result" | "error";
 
 function Home() {
-  const identify = useServerFn(identifyBird);
+  const identify = useServerFn(identifyAnimal);
   const fileRef = useRef<HTMLInputElement>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [result, setResult] = useState<BirdIdentification | null>(null);
+  const [result, setResult] = useState<AnimalIdentification | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sightings, setSightings] = useState<Sighting[]>([]);
 
@@ -105,9 +105,9 @@ function Home() {
             animate={{ rotate: 0, scale: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 14 }}
           >
-            <Feather className="h-5 w-5" strokeWidth={2.2} />
+            <PawPrint className="h-5 w-5" strokeWidth={2.2} />
           </motion.span>
-          <span className="font-display text-xl font-semibold tracking-tight">Plumage</span>
+          <span className="font-display text-xl font-semibold tracking-tight">Wildeye</span>
         </Link>
         <span className="text-xs uppercase tracking-widest text-muted-foreground">
           Field guide
@@ -149,7 +149,7 @@ function Home() {
                   <div className="relative">
                     <img
                       src={imageUrl}
-                      alt="Bird to identify"
+                      alt="Animal to identify"
                       className="aspect-square w-full object-cover"
                     />
                     {phase === "loading" && (
@@ -258,8 +258,8 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
         className="mx-auto mt-2 max-w-xs"
       >
         <motion.img
-          src={heroBird}
-          alt="Illustrated songbird perched on a leafy twig"
+          src={heroAnimals}
+          alt="Illustrated collection of animals — a fox, owl, frog, fish and butterflies"
           width={1024}
           height={1024}
           animate={{ y: [0, -6, 0] }}
@@ -273,7 +273,7 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
         transition={{ delay: 0.2, duration: 0.45 }}
         className="mt-4 font-display text-4xl font-semibold leading-tight text-foreground sm:text-5xl"
       >
-        Who is that bird?
+        What animal is that?
       </motion.h1>
       <motion.p
         initial={{ opacity: 0, y: 10 }}
@@ -281,7 +281,7 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
         transition={{ delay: 0.3, duration: 0.45 }}
         className="mx-auto mt-3 max-w-md text-balance text-muted-foreground"
       >
-        Snap a photo and Plumage will name the species, where it lives, and one
+        Snap a photo and Wildeye will name the species, where it lives, and one
         thing worth knowing about it.
       </motion.p>
 
@@ -297,7 +297,7 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
           onClick={onCamera}
           className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
         >
-          <Camera className="h-5 w-5" /> Identify a bird
+          <Camera className="h-5 w-5" /> Identify an animal
         </motion.button>
         <button
           onClick={onUpload}
@@ -377,8 +377,8 @@ function ScanLine() {
   );
 }
 
-function ResultCard({ result }: { result: BirdIdentification }) {
-  if (!result.isBird) {
+function ResultCard({ result }: { result: AnimalIdentification }) {
+  if (!result.isAnimal) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 8 }}
@@ -386,7 +386,7 @@ function ResultCard({ result }: { result: BirdIdentification }) {
         className="space-y-2"
       >
         <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
-          <X className="h-3 w-3" /> No bird found
+          <X className="h-3 w-3" /> No animal found
         </div>
         <p className="text-sm text-muted-foreground">{result.description}</p>
       </motion.div>
@@ -407,15 +407,22 @@ function ResultCard({ result }: { result: BirdIdentification }) {
     >
       <motion.div
         variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}
-        className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground"
+        className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground"
       >
-        <motion.span
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 360, damping: 18, delay: 0.2 }}
-          className={`inline-block h-2 w-2 rounded-full ${dot}`}
-        />
-        {result.confidence} confidence
+        {result.group && (
+          <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-1 font-medium text-secondary-foreground">
+            {result.group}
+          </span>
+        )}
+        <span className="inline-flex items-center gap-1.5">
+          <motion.span
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 360, damping: 18, delay: 0.2 }}
+            className={`inline-block h-2 w-2 rounded-full ${dot}`}
+          />
+          {result.confidence} confidence
+        </span>
       </motion.div>
       <motion.div
         variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}
