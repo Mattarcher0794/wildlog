@@ -490,7 +490,7 @@ function VisibilityToggle({
           className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors ${
             !isPublic
               ? "bg-plum text-paper"
-              : "text-muted-foreground hover:text-foreground"
+              : "text-foreground/70 hover:text-foreground"
           }`}
         >
           <Lock className="h-3.5 w-3.5" /> Private
@@ -500,8 +500,8 @@ function VisibilityToggle({
           onClick={() => onChange(true)}
           className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors ${
             isPublic
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-plum text-paper"
+              : "text-foreground/70 hover:text-foreground"
           }`}
         >
           <Globe className="h-3.5 w-3.5" /> Public
