@@ -69,7 +69,6 @@ function MapPage() {
         sighting={active as DetailSighting | null}
         onClose={() => setActive(null)}
       />
-      <TabBar />
     </main>
   );
 }
