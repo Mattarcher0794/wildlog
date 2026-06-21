@@ -4,8 +4,6 @@ import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Search, Lock, Globe } from "lucide-react";
 
-import { Wordmark } from "@/components/Brand";
-import { TabBar } from "@/components/TabBar";
 import { useRequireUsername } from "@/hooks/use-profile";
 import { ANIMAL_GROUPS, type AnimalGroup } from "@/lib/identify.functions";
 import { listMySightings, type DbSighting } from "@/lib/sightings.functions";
