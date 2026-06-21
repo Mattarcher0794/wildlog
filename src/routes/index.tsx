@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Camera, Loader2, RotateCcw, Upload, X } from "lucide-react";
 
 import heroAnimals from "@/assets/hero-animals.jpg";
-import logoBadge from "@/assets/logo-badge.png";
+import { Wordmark } from "@/components/Brand";
 import { TabBar } from "@/components/TabBar";
 import { identifyAnimal, type AnimalIdentification } from "@/lib/identify.functions";
 import {
@@ -19,16 +19,16 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Wildeye — Snap any animal, learn its name" },
+      { title: "Wildlog — Log every wildlife sighting" },
       {
         name: "description",
         content:
-          "Wildeye identifies any animal from a single photo — mammals, birds, reptiles, insects and more. Snap or upload, and your pocket field guide names the species in seconds.",
+          "Wildlog is your pocket field journal. Snap any animal, name the species in seconds, and keep a warm running log of everything you spot in the wild.",
       },
-      { property: "og:title", content: "Wildeye — Snap any animal, learn its name" },
+      { property: "og:title", content: "Wildlog — Log every wildlife sighting" },
       {
         property: "og:description",
-        content: "AI-powered pocket field guide for every animal. Snap a photo, get the species.",
+        content: "Your pocket field journal. Snap an animal, name it, log it.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
