@@ -134,7 +134,7 @@ function AuthPage() {
     });
     setBusy(false);
     if (error) {
-      setError(error.message);
+      setError(friendlyAuthError(error));
       return;
     }
     setStep("code");
