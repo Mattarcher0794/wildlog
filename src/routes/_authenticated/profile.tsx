@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { Share2, LogOut, Check } from "lucide-react";
 
+import { AccountContact } from "@/components/AccountContact";
 import { BlobAvatar, Wordmark } from "@/components/Brand";
 import { TabBar } from "@/components/TabBar";
 import { useMyProfile, useRequireUsername } from "@/hooks/use-profile";
