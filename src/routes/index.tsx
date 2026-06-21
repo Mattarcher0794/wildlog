@@ -100,18 +100,21 @@ function Home() {
         transition={{ duration: 0.4 }}
         className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6"
       >
-        <Link to="/" className="flex items-center gap-2 text-primary">
-          <motion.span
+        <Link to="/" className="flex items-center gap-2 text-foreground">
+          <motion.img
+            src={logoMascot}
+            alt="Wildeye fox mascot"
+            width={512}
+            height={512}
             initial={{ rotate: -20, scale: 0.6 }}
             animate={{ rotate: 0, scale: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 14 }}
-          >
-            <PawPrint className="h-5 w-5" strokeWidth={2.2} />
-          </motion.span>
-          <span className="font-display text-xl font-semibold tracking-tight">Wildeye</span>
+            className="h-9 w-9"
+          />
+          <span className="font-display text-2xl font-bold tracking-tight">Wildeye</span>
         </Link>
-        <span className="text-xs uppercase tracking-widest text-muted-foreground">
-          Field guide
+        <span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold uppercase tracking-wide text-secondary-foreground">
+          Spot it · Name it
         </span>
       </motion.header>
 
