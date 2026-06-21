@@ -17,19 +17,16 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
-          email: string | null
           id: string
           username: string | null
         }
         Insert: {
           created_at?: string
-          email?: string | null
           id: string
           username?: string | null
         }
         Update: {
           created_at?: string
-          email?: string | null
           id?: string
           username?: string | null
         }
@@ -91,30 +88,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_public_profile: {
-        Args: { p_username: string }
-        Returns: {
-          created_at: string
-          sighting_count: number
-          species_count: number
-          username: string
-        }[]
-      }
-      get_public_sightings: {
-        Args: { p_username: string }
-        Returns: {
-          animal_group: string
-          common_name: string
-          created_at: string
-          description: string
-          id: string
-          image_url: string
-          lat: number
-          lng: number
-          scientific_name: string
-        }[]
-      }
-      username_available: { Args: { p_username: string }; Returns: boolean }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
