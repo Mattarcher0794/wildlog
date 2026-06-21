@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { Mail, ArrowLeft } from "lucide-react";
@@ -6,6 +7,7 @@ import { Mail, ArrowLeft } from "lucide-react";
 import { Wordmark } from "@/components/Brand";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { supabase } from "@/integrations/supabase/client";
+import { verifyAuthEmailCode } from "@/lib/auth.functions";
 import { ONBOARDED_KEY } from "./onboarding";
 
 export const Route = createFileRoute("/auth")({
@@ -26,6 +28,7 @@ type Step = "email" | "code";
 
 function AuthPage() {
   const navigate = useNavigate();
+  const verifyAuthCode = useServerFn(verifyAuthEmailCode);
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -81,19 +84,20 @@ function AuthPage() {
     verifyingRef.current = true;
     setError(null);
     setBusy(true);
-    const { error } = await supabase.auth.verifyOtp({
-      email: email.trim(),
-      token,
-      type: "email",
-    });
-    setBusy(false);
-    verifyingRef.current = false;
-    if (error) {
+    try {
+      const session = await verifyAuthCode({
+        data: { email: email.trim(), code: token },
+      });
+      const { error: sessionError } = await supabase.auth.setSession(session);
+      if (sessionError) throw sessionError;
+      navigate({ to: "/", replace: true });
+    } catch {
       setError("That code's wrong or expired. Try again, or send a new one.");
       setCode("");
-      return;
+    } finally {
+      setBusy(false);
+      verifyingRef.current = false;
     }
-    navigate({ to: "/", replace: true });
   }
 
   function onCodeChange(value: string) {
@@ -117,9 +121,7 @@ function AuthPage() {
         >
           {step === "email" ? (
             <>
-              <h1 className="font-display text-4xl text-foreground">
-                Sign in to start logging
-              </h1>
+              <h1 className="font-display text-4xl text-foreground">Sign in to start logging</h1>
               <p className="mt-3 text-sm text-muted-foreground">
                 We'll email you a 6-digit code — no password to remember.
               </p>
@@ -153,9 +155,7 @@ function AuthPage() {
               >
                 <Mail className="h-8 w-8 text-plum" />
               </motion.div>
-              <h1 className="mt-6 font-display text-3xl text-foreground">
-                Check your email
-              </h1>
+              <h1 className="mt-6 font-display text-3xl text-foreground">Check your email</h1>
               <p className="mt-3 text-sm text-muted-foreground">
                 Enter the 6-digit code we sent to{" "}
                 <span className="font-semibold text-foreground">{email}</span>.
@@ -181,12 +181,8 @@ function AuthPage() {
                 </InputOTP>
               </div>
 
-              {error && (
-                <p className="mt-4 text-sm text-destructive">{error}</p>
-              )}
-              {busy && (
-                <p className="mt-4 text-sm text-muted-foreground">Confirming…</p>
-              )}
+              {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
+              {busy && <p className="mt-4 text-sm text-muted-foreground">Confirming…</p>}
 
               <button
                 onClick={() => sendCode()}
