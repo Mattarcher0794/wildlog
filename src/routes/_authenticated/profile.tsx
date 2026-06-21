@@ -99,6 +99,15 @@ function ProfilePage() {
           <Stat label="Species" value={stats.species} />
           <Stat label="Public" value={stats.publicCount} />
         </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.4 }}
+          className="mt-8"
+        >
+          <AccountContact />
+        </motion.div>
+
 
         <motion.div
           initial={{ opacity: 0, y: 12 }}
