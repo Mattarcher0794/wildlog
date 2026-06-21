@@ -100,9 +100,9 @@ function HistoryPage() {
         transition={{ duration: 0.4 }}
         className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6"
       >
-        <Link to="/" className="flex items-center gap-2 text-primary">
-          <PawPrint className="h-5 w-5" strokeWidth={2.2} />
-          <span className="font-display text-xl font-semibold">Wildeye</span>
+        <Link to="/" className="flex items-center gap-2 text-foreground">
+          <img src={logoMascot} alt="Wildeye fox mascot" width={512} height={512} className="h-9 w-9" />
+          <span className="font-display text-2xl font-bold">Wildeye</span>
         </Link>
         {sightings.length > 0 && (
           <button
