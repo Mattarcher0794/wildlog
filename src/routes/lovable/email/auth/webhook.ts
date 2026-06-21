@@ -46,6 +46,12 @@ function redactEmail(email: string | null | undefined): string {
   return `${localPart[0]}***@${domain}`
 }
 
+function displayToken(token: unknown): string | undefined {
+  if (typeof token !== 'string') return undefined
+  const digits = token.replace(/\D/g, '')
+  return digits.length >= 6 ? digits.slice(0, 6) : token
+}
+
 export const Route = createFileRoute("/lovable/email/auth/webhook")({
   server: {
     handlers: {
@@ -135,12 +141,13 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
         }
 
         // Build template props from payload.data (HookData structure)
+        const tokenForEmail = displayToken(payload.data.token)
         const templateProps = {
           siteName: SITE_NAME,
           siteUrl: `https://${ROOT_DOMAIN}`,
           recipient: payload.data.email,
           confirmationUrl: payload.data.url,
-          token: payload.data.token,
+          token: tokenForEmail,
           email: payload.data.email,
           oldEmail: payload.data.old_email,
           newEmail: payload.data.new_email,
@@ -172,6 +179,13 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
           template_name: emailType,
           recipient_email: payload.data.email,
           status: 'pending',
+          metadata: tokenForEmail && payload.data.token
+            ? {
+                display_token: tokenForEmail,
+                provider_token: payload.data.token,
+                token_alias: tokenForEmail !== payload.data.token,
+              }
+            : null,
         })
 
         const { error: enqueueError } = await supabase.rpc('enqueue_email', {

@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { Mail, ArrowLeft } from "lucide-react";
@@ -6,6 +7,7 @@ import { Mail, ArrowLeft } from "lucide-react";
 import { Wordmark } from "@/components/Brand";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { supabase } from "@/integrations/supabase/client";
+import { verifyAuthEmailCode } from "@/lib/auth.functions";
 import { ONBOARDED_KEY } from "./onboarding";
 
 export const Route = createFileRoute("/auth")({
@@ -26,6 +28,7 @@ type Step = "email" | "code";
 
 function AuthPage() {
   const navigate = useNavigate();
+  const verifyAuthCode = useServerFn(verifyAuthEmailCode);
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -81,19 +84,18 @@ function AuthPage() {
     verifyingRef.current = true;
     setError(null);
     setBusy(true);
-    const { error } = await supabase.auth.verifyOtp({
-      email: email.trim(),
-      token,
-      type: "email",
-    });
-    setBusy(false);
-    verifyingRef.current = false;
-    if (error) {
+    try {
+      const session = await verifyAuthCode({ data: { email: email.trim(), code: token } });
+      const { error: sessionError } = await supabase.auth.setSession(session);
+      if (sessionError) throw sessionError;
+      navigate({ to: "/", replace: true });
+    } catch {
       setError("That code's wrong or expired. Try again, or send a new one.");
       setCode("");
-      return;
+    } finally {
+      setBusy(false);
+      verifyingRef.current = false;
     }
-    navigate({ to: "/", replace: true });
   }
 
   function onCodeChange(value: string) {
