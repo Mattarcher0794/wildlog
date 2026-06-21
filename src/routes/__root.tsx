@@ -77,7 +77,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" },
       { name: "theme-color", content: "#f7f1e3" },
       { title: "Wildlog" },
       { property: "og:title", content: "Wildlog" },
@@ -137,6 +137,21 @@ function RootComponent() {
     });
     return () => data.subscription.unsubscribe();
   }, [router, queryClient]);
+
+  // Block iOS Safari double-tap-to-zoom for a native-app feel, but allow it
+  // inside the map canvas where double-tap zoom is an expected interaction.
+  useEffect(() => {
+    let lastTouchEnd = 0;
+    const onTouchEnd = (event: TouchEvent) => {
+      const target = event.target as Element | null;
+      if (target?.closest(".maplibregl-map")) return;
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) event.preventDefault();
+      lastTouchEnd = now;
+    };
+    document.addEventListener("touchend", onTouchEnd, { passive: false });
+    return () => document.removeEventListener("touchend", onTouchEnd);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
