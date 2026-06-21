@@ -19,14 +19,14 @@ function NotFoundComponent() {
         <h1 className="text-7xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          This page has wandered off into the wild.
+          This page has flown the coop.
         </p>
         <div className="mt-6">
           <Link
             to="/"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Back home
+            Back to the nest
           </Link>
         </div>
       </div>
@@ -77,15 +77,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { name: "theme-color", content: "#F7EDE4" },
-      { title: "Wildlog — Log every wildlife sighting" },
-      { property: "og:title", content: "Wildlog — Log every wildlife sighting" },
-      { name: "twitter:title", content: "Wildlog — Log every wildlife sighting" },
-      { name: "description", content: "Wildlog is your pocket field journal — snap any animal, name the species and keep a warm running log of everything you spot in the wild." },
-      { property: "og:description", content: "Wildlog is your pocket field journal — snap any animal, name the species and keep a warm running log of everything you spot in the wild." },
-      { name: "twitter:description", content: "Wildlog is your pocket field journal — snap any animal, name the species and keep a warm running log of everything you spot in the wild." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ed3af252-4cae-4f45-9a11-6aeb98ca85b3/id-preview-01f6756f--35d4e6b1-eaf8-4542-bea7-624d46b68b3d.lovable.app-1781960613693.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ed3af252-4cae-4f45-9a11-6aeb98ca85b3/id-preview-01f6756f--35d4e6b1-eaf8-4542-bea7-624d46b68b3d.lovable.app-1781960613693.png" },
+      { name: "theme-color", content: "#f7f1e3" },
+      { title: "Wildlog" },
+      { property: "og:title", content: "Wildlog" },
+      { name: "twitter:title", content: "Wildlog" },
+      { name: "description", content: "Wildlog — log every sighting, no matter how wild." },
+      { property: "og:description", content: "Wildlog — log every sighting, no matter how wild." },
+      { name: "twitter:description", content: "Wildlog — log every sighting, no matter how wild." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/5522f70d-3e11-4dd3-a706-e65ff4675cac" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/5522f70d-3e11-4dd3-a706-e65ff4675cac" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
     ],
@@ -95,7 +95,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Sniglet:wght@400;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700&family=Inter:wght@400;500;600&display=swap",
       },
     ],
   }),
