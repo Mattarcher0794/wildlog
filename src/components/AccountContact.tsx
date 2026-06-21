@@ -80,7 +80,7 @@ function EmailRow({ email, onSaved }: { email: string | null; onSaved: () => voi
     const { error } = await supabase.auth.updateUser({ email: value.trim() });
     setBusy(false);
     if (error) {
-      setError(error.message);
+      setError(friendlyAuthError(error, "Couldn't save that email. Please try again."));
       return;
     }
     setSent(true);
