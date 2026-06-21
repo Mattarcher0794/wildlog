@@ -16,6 +16,21 @@ function isValidPhone(value: string): boolean {
   return /^\+[1-9]\d{6,14}$/.test(value);
 }
 
+function friendlyAuthError(err: unknown, fallback: string): string {
+  const raw =
+    err && typeof err === "object" && "message" in err
+      ? String((err as { message?: unknown }).message ?? "")
+      : typeof err === "string"
+        ? err
+        : "";
+  const msg = raw.trim();
+  if (!msg || msg === "{}" || /SMS provider|phone provider|provider/i.test(msg)) {
+    return fallback;
+  }
+  return msg;
+}
+
+
 export function AccountContact() {
   const [email, setEmail] = useState<string | null>(null);
   const [phone, setPhone] = useState<string | null>(null);
