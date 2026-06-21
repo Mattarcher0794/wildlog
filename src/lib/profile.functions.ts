@@ -38,11 +38,9 @@ const usernameRule = z
   .pipe(z.string().regex(/^[a-z0-9_]{3,20}$/));
 
 function publicClient() {
-  return createClient<Database>(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PUBLISHABLE_KEY!,
-    { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
-  );
+  return createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+  });
 }
 
 export const getMyProfile = createServerFn({ method: "GET" })
@@ -77,9 +75,7 @@ export const claimUsername = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<Profile> => {
     const parsed = usernameRule.safeParse(data.username);
     if (!parsed.success) {
-      throw new Error(
-        "Usernames are 3–20 characters: lowercase letters, numbers and underscores.",
-      );
+      throw new Error("Usernames are 3–20 characters: lowercase letters, numbers and underscores.");
     }
     const { data: taken } = await context.supabase
       .from("profiles")
@@ -113,16 +109,22 @@ export const getPublicProfile = createServerFn({ method: "GET" })
     const { data: rows } = await sb
       .from("sightings")
       .select(
-        "id, image_url, common_name, scientific_name, animal_group, description, created_at, lat, lng",
+        "id, image_url, common_name, scientific_name, animal_group, description, created_at, approx_lat, approx_lng",
       )
       .eq("user_id", profile.id)
       .eq("is_public", true)
       .eq("is_animal", true)
       .order("created_at", { ascending: false });
-    const sightings = (rows ?? []) as PublicSighting[];
-    const speciesCount = new Set(
-      sightings.map((s) => s.common_name.toLowerCase()),
-    ).size;
+    // Public profiles only ever expose coordinates rounded to ~1km (approx_lat/
+    // approx_lng); exact lat/lng are never read with the anon key.
+    const sightings = (rows ?? []).map((r) => {
+      const { approx_lat, approx_lng, ...rest } = r as Record<string, unknown> & {
+        approx_lat: number | null;
+        approx_lng: number | null;
+      };
+      return { ...rest, lat: approx_lat, lng: approx_lng } as PublicSighting;
+    });
+    const speciesCount = new Set(sightings.map((s) => s.common_name.toLowerCase())).size;
     return {
       username: profile.username,
       joinedAt: profile.created_at,
