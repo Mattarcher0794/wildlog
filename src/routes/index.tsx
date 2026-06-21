@@ -166,7 +166,7 @@ function Home() {
                         className="flex items-center gap-3 text-muted-foreground"
                       >
                         <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                        <span className="text-sm">Consulting the field guide…</span>
+                        <span className="text-sm">Checking the field guide…</span>
                       </motion.div>
                     )}
                     {phase === "result" && result && (
@@ -204,7 +204,7 @@ function Home() {
                     onClick={reset}
                     className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground hover:bg-secondary"
                   >
-                    <Camera className="h-4 w-4" /> Identify another
+                    <Camera className="h-4 w-4" /> Log another
                   </motion.button>
                 </motion.div>
               )}
@@ -251,19 +251,19 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
       >
         <img
           src={heroAnimals}
-          alt="Flat two-tone illustration of animals — a fox, owl, frog and fish in coral and deep plum"
+          alt="Hand-painted field-journal illustration of a fox, owl, deer and frog in peach, plum and moss"
           width={1024}
           height={1024}
-          className="h-auto w-full rounded-[2rem]"
+          className="blob h-auto w-full"
         />
       </motion.div>
       <motion.h1
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.45 }}
-        className="mt-4 font-display text-5xl font-bold leading-[1.05] text-foreground sm:text-6xl"
+        className="mt-4 font-display text-5xl leading-[1.05] text-foreground sm:text-6xl"
       >
-        What animal <span className="text-primary">is that?</span>
+        What did you <span className="text-primary">spot?</span>
       </motion.h1>
       <motion.p
         initial={{ opacity: 0, y: 10 }}
@@ -271,8 +271,8 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
         transition={{ delay: 0.3, duration: 0.45 }}
         className="mx-auto mt-3 max-w-md text-balance font-medium text-muted-foreground"
       >
-        Snap a photo and Wildeye names the species, where it lives, and one cool
-        thing worth knowing about it.
+        Snap a photo and Wildlog names the species, where it lives, and one
+        thing worth knowing — then keeps it in your journal.
       </motion.p>
 
       <motion.div
@@ -285,9 +285,9 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
           onClick={onCamera}
-          className="card-pop inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-bold text-primary-foreground hover:bg-primary/90"
+          className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-semibold text-primary-foreground shadow-[0_6px_18px_-8px_rgba(60,50,72,0.45)] hover:bg-primary/90"
         >
-          <Camera className="h-5 w-5" /> Identify an animal
+          <Camera className="h-5 w-5" /> Log a sighting
         </motion.button>
         <button
           onClick={onUpload}
@@ -340,7 +340,7 @@ function RecentStrip({ sightings }: { sightings: Sighting[] }) {
               className="aspect-square w-full object-cover"
             />
             <div className="px-3 py-2">
-              <p className="truncate font-display text-sm font-bold">
+              <p className="truncate text-sm font-semibold text-foreground">
                 {s.result.commonName}
               </p>
               <p className="truncate text-xs italic text-muted-foreground">
