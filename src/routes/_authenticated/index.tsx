@@ -105,7 +105,10 @@ function Home() {
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.35 }}
             >
-              <Hero />
+              <Hero
+                onCamera={() => fileRef.current?.click()}
+                onUpload={() => uploadRef.current?.click()}
+              />
               {sightings.length > 0 && (
                 <RecentStrip sightings={sightings.slice(0, 6)} />
               )}
