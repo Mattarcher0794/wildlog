@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Camera, Loader2, RotateCcw, Upload, X } from "lucide-react";
+import { Camera, RotateCcw, Upload, X } from "lucide-react";
 
 import heroAnimals from "@/assets/hero-animals.jpg";
 import { Wordmark } from "@/components/Brand";
@@ -165,7 +165,7 @@ function Home() {
                         exit={{ opacity: 0 }}
                         className="flex items-center gap-3 text-muted-foreground"
                       >
-                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                        <span className="blob-spin h-5 w-5 bg-primary" aria-hidden />
                         <span className="text-sm">Checking the field guide…</span>
                       </motion.div>
                     )}
@@ -323,7 +323,7 @@ function RecentStrip({ sightings }: { sightings: Sighting[] }) {
           show: { transition: { staggerChildren: 0.06 } },
         }}
       >
-        {sightings.map((s) => (
+        {sightings.map((s, i) => (
           <motion.li
             key={s.id}
             variants={{
@@ -331,15 +331,22 @@ function RecentStrip({ sightings }: { sightings: Sighting[] }) {
               show: { opacity: 1, y: 0 },
             }}
             whileHover={{ y: -3 }}
-            className="card-pop overflow-hidden rounded-2xl bg-card"
+            className="card-journal bg-card p-3"
           >
-            <img
-              src={s.thumbnail}
-              alt={s.result.commonName}
-              loading="lazy"
-              className="aspect-square w-full object-cover"
-            />
-            <div className="px-3 py-2">
+            <div className="relative mx-auto w-fit">
+              <img
+                src={s.thumbnail}
+                alt={s.result.commonName}
+                loading="lazy"
+                className={`${i % 2 === 0 ? "blob" : "blob-alt"} aspect-square w-full object-cover`}
+              />
+              {i === 0 && (
+                <span className="absolute -right-1 -top-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground shadow-sm">
+                  Just logged
+                </span>
+              )}
+            </div>
+            <div className="px-1 py-2">
               <p className="truncate text-sm font-semibold text-foreground">
                 {s.result.commonName}
               </p>
