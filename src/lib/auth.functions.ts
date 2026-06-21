@@ -76,3 +76,72 @@ export const verifyAuthEmailCode = createServerFn({ method: "POST" })
       refresh_token: verified.session.refresh_token,
     };
   });
+
+/**
+ * Test-only bypass: signs into a fixed throwaway account with a password so
+ * QA can skip the 6-digit email code. Triggered by typing "Test123" as the
+ * email on the sign-in screen.
+ */
+export const testSignIn = createServerFn({ method: "POST" }).handler(
+  async (): Promise<VerifyResult> => {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !publishableKey || !serviceRoleKey) {
+      throw new Error("Test sign-in is not configured.");
+    }
+
+    const authClient = createClient(supabaseUrl, publishableKey, {
+      auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+    });
+
+    async function signIn() {
+      return authClient.auth.signInWithPassword({
+        email: TEST_EMAIL,
+        password: TEST_PASSWORD,
+      });
+    }
+
+    // Happy path: the test account already exists.
+    let { data, error } = await signIn();
+
+    if (error || !data.session) {
+      // Provision (or repair) the test account, then retry.
+      const admin = createClient(supabaseUrl, serviceRoleKey, {
+        auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+      });
+
+      const { error: createErr } = await admin.auth.admin.createUser({
+        email: TEST_EMAIL,
+        password: TEST_PASSWORD,
+        email_confirm: true,
+      });
+
+      if (createErr) {
+        // Already exists — find it and reset the password so we know it.
+        const { data: list } = await admin.auth.admin.listUsers({ perPage: 200 });
+        const existing = list?.users.find(
+          (u) => u.email?.toLowerCase() === TEST_EMAIL,
+        );
+        if (existing) {
+          await admin.auth.admin.updateUserById(existing.id, {
+            password: TEST_PASSWORD,
+            email_confirm: true,
+          });
+        }
+      }
+
+      ({ data, error } = await signIn());
+    }
+
+    if (error || !data.session?.access_token || !data.session.refresh_token) {
+      throw new Error("Couldn't start the test session. Please try again.");
+    }
+
+    return {
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+    };
+  },
+);
