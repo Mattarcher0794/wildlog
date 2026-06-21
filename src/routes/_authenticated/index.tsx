@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Camera, RotateCcw, Upload, X, Lock, Globe } from "lucide-react";
 
+import heroAnimals from "@/assets/hero-animals.jpg";
 import { Wordmark } from "@/components/Brand";
 import { TabBar } from "@/components/TabBar";
 import { useRequireUsername } from "@/hooks/use-profile";
