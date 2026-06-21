@@ -239,8 +239,44 @@ function Home() {
         }}
       />
 
+      {phase === "idle" && (
+        <CtaDock
+          onCamera={() => fileRef.current?.click()}
+          onUpload={() => uploadRef.current?.click()}
+        />
+      )}
+
       <TabBar />
     </main>
+  );
+}
+
+function CtaDock({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => void }) {
+  return (
+    <motion.div
+      initial={{ y: 24, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ delay: 0.35, duration: 0.4 }}
+      className="fixed inset-x-0 z-20 flex flex-col items-center gap-[10px]"
+      style={{ bottom: "calc(104px + env(safe-area-inset-bottom))" }}
+    >
+      <motion.button
+        whileTap={{ scale: 0.97 }}
+        onClick={onCamera}
+        className="flex h-14 w-[88%] max-w-md items-center justify-center gap-2 rounded-full text-base font-bold text-white shadow-[0_8px_22px_-10px_rgba(0,0,0,0.45)]"
+        style={{ backgroundColor: "#4a6b3a" }}
+      >
+        <Camera className="h-5 w-5" strokeWidth={2.2} /> Start a sighting
+      </motion.button>
+      <motion.button
+        whileTap={{ scale: 0.97 }}
+        onClick={onUpload}
+        className="flex h-14 w-[88%] max-w-md items-center justify-center gap-2 rounded-full border bg-white text-base font-semibold"
+        style={{ color: "#4a6b3a", borderColor: "rgba(74,107,58,0.15)" }}
+      >
+        <Upload className="h-5 w-5" strokeWidth={2.2} /> Upload a previous photo
+      </motion.button>
+    </motion.div>
   );
 }
 
