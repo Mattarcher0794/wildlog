@@ -3,8 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 
-import { Wordmark } from "@/components/Brand";
-import { TabBar } from "@/components/TabBar";
 import { SightingDetailModal, type DetailSighting } from "@/components/SightingDetail";
 import { SightingsMap } from "@/components/SightingsMap";
 import { useRequireUsername } from "@/hooks/use-profile";
