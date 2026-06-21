@@ -165,7 +165,7 @@ function Home() {
                         exit={{ opacity: 0 }}
                         className="flex items-center gap-3 text-muted-foreground"
                       >
-                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                        <span className="blob-spin h-5 w-5 bg-primary" aria-hidden />
                         <span className="text-sm">Checking the field guide…</span>
                       </motion.div>
                     )}
