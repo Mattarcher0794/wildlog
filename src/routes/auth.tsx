@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { Mail, Phone, ArrowLeft } from "lucide-react";
 
-import { Wordmark } from "@/components/Brand";
+import { Splash, Wordmark } from "@/components/Brand";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { supabase } from "@/integrations/supabase/client";
 import { testSignIn, verifyAuthEmailCode } from "@/lib/auth.functions";
