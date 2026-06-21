@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { PawPrint, Search, Trash2 } from "lucide-react";
 
+import logoMascot from "@/assets/logo-mascot.png";
 import { TabBar } from "@/components/TabBar";
 import { clearSightings, loadSightings, type Sighting } from "@/lib/sightings";
 import { ANIMAL_GROUPS, type AnimalGroup } from "@/lib/identify.functions";
