@@ -254,7 +254,7 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
         initial={{ scale: 0.92, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }}
-        className="mx-auto mt-1 w-3/5 max-w-[260px]"
+        className="mx-auto mt-2 max-w-sm"
       >
         <img
           src={heroAnimals}
@@ -268,7 +268,7 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.45 }}
-        className="mt-3 font-display text-5xl leading-[1.05] text-foreground sm:text-6xl"
+        className="mt-4 font-display text-5xl leading-[1.05] text-foreground sm:text-6xl"
       >
         What did you <span className="text-primary">spot?</span>
       </motion.h1>
@@ -286,13 +286,13 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4, duration: 0.45 }}
-        className="sticky bottom-[calc(64px+env(safe-area-inset-bottom))] z-10 mt-8 flex flex-col items-center gap-3"
+        className="mt-8 flex flex-col items-center gap-3"
       >
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
           onClick={onCamera}
-          className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-semibold text-primary-foreground shadow-[0_8px_24px_-6px_rgba(60,50,72,0.45)] hover:bg-primary/90"
+          className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-semibold text-primary-foreground shadow-[0_6px_18px_-8px_rgba(60,50,72,0.45)] hover:bg-primary/90"
         >
           <Camera className="h-5 w-5" /> Log a sighting
         </motion.button>
