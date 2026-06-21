@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { Camera, BookOpen } from "lucide-react";
 
 const tabs = [
-  { to: "/", label: "Identify", icon: Camera },
+  { to: "/", label: "Log", icon: Camera },
   { to: "/history", label: "Journal", icon: BookOpen },
 ] as const;
 
