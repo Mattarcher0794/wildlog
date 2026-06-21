@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Camera, Loader2, RotateCcw, Upload, X } from "lucide-react";
+import { Camera, RotateCcw, Upload, X } from "lucide-react";
 
 import heroAnimals from "@/assets/hero-animals.jpg";
 import { Wordmark } from "@/components/Brand";
