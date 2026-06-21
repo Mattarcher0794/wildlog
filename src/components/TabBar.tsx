@@ -17,14 +17,14 @@ export function TabBar() {
       transition={{ type: "spring", stiffness: 220, damping: 24, delay: 0.15 }}
       className="fixed inset-x-0 bottom-0 z-30 flex justify-center pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3"
     >
-      <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-border bg-card/90 p-1.5 shadow-lg backdrop-blur">
+      <div className="pointer-events-auto flex items-center gap-1 rounded-full border-2 border-border bg-card p-1.5 shadow-[3px_3px_0_0_var(--color-border)]">
         {tabs.map(({ to, label, icon: Icon }) => {
           const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
           return (
             <Link
               key={to}
               to={to}
-              className="relative flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium"
+              className="relative flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold"
             >
               {active && (
                 <motion.span
