@@ -85,7 +85,9 @@ function AuthPage() {
     setError(null);
     setBusy(true);
     try {
-      const session = await verifyAuthCode({ data: { email: email.trim(), code: token } });
+      const session = await verifyAuthCode({
+        data: { email: email.trim(), code: token },
+      });
       const { error: sessionError } = await supabase.auth.setSession(session);
       if (sessionError) throw sessionError;
       navigate({ to: "/", replace: true });
@@ -119,9 +121,7 @@ function AuthPage() {
         >
           {step === "email" ? (
             <>
-              <h1 className="font-display text-4xl text-foreground">
-                Sign in to start logging
-              </h1>
+              <h1 className="font-display text-4xl text-foreground">Sign in to start logging</h1>
               <p className="mt-3 text-sm text-muted-foreground">
                 We'll email you a 6-digit code — no password to remember.
               </p>
@@ -155,9 +155,7 @@ function AuthPage() {
               >
                 <Mail className="h-8 w-8 text-plum" />
               </motion.div>
-              <h1 className="mt-6 font-display text-3xl text-foreground">
-                Check your email
-              </h1>
+              <h1 className="mt-6 font-display text-3xl text-foreground">Check your email</h1>
               <p className="mt-3 text-sm text-muted-foreground">
                 Enter the 6-digit code we sent to{" "}
                 <span className="font-semibold text-foreground">{email}</span>.
@@ -183,12 +181,8 @@ function AuthPage() {
                 </InputOTP>
               </div>
 
-              {error && (
-                <p className="mt-4 text-sm text-destructive">{error}</p>
-              )}
-              {busy && (
-                <p className="mt-4 text-sm text-muted-foreground">Confirming…</p>
-              )}
+              {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
+              {busy && <p className="mt-4 text-sm text-muted-foreground">Confirming…</p>}
 
               <button
                 onClick={() => sendCode()}
