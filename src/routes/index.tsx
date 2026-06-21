@@ -2,9 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Camera, PawPrint, Loader2, RotateCcw, Upload, X } from "lucide-react";
+import { Camera, Loader2, RotateCcw, Upload, X } from "lucide-react";
 
 import heroAnimals from "@/assets/hero-animals.jpg";
+import logoMascot from "@/assets/logo-mascot.png";
 import { TabBar } from "@/components/TabBar";
 import { identifyAnimal, type AnimalIdentification } from "@/lib/identify.functions";
 import {
@@ -99,18 +100,21 @@ function Home() {
         transition={{ duration: 0.4 }}
         className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6"
       >
-        <Link to="/" className="flex items-center gap-2 text-primary">
-          <motion.span
+        <Link to="/" className="flex items-center gap-2 text-foreground">
+          <motion.img
+            src={logoMascot}
+            alt="Wildeye fox mascot"
+            width={512}
+            height={512}
             initial={{ rotate: -20, scale: 0.6 }}
             animate={{ rotate: 0, scale: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 14 }}
-          >
-            <PawPrint className="h-5 w-5" strokeWidth={2.2} />
-          </motion.span>
-          <span className="font-display text-xl font-semibold tracking-tight">Wildeye</span>
+            className="h-9 w-9"
+          />
+          <span className="font-display text-2xl font-bold tracking-tight">Wildeye</span>
         </Link>
-        <span className="text-xs uppercase tracking-widest text-muted-foreground">
-          Field guide
+        <span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold uppercase tracking-wide text-secondary-foreground">
+          Spot it · Name it
         </span>
       </motion.header>
 
@@ -255,33 +259,33 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
         initial={{ scale: 0.85, opacity: 0, rotate: -4 }}
         animate={{ scale: 1, opacity: 1, rotate: 0 }}
         transition={{ type: "spring", stiffness: 180, damping: 18, delay: 0.05 }}
-        className="mx-auto mt-2 max-w-xs"
+        className="mx-auto mt-2 max-w-sm"
       >
         <motion.img
           src={heroAnimals}
-          alt="Illustrated collection of animals — a fox, owl, frog, fish and butterflies"
+          alt="Bold flat illustration of animals — a fox, owl, frog, fish, turtle and butterfly"
           width={1024}
           height={1024}
-          animate={{ y: [0, -6, 0] }}
+          animate={{ y: [0, -8, 0] }}
           transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-          className="h-auto w-full rounded-full drop-shadow-sm"
+          className="h-auto w-full rounded-[2rem] drop-shadow-[6px_8px_0_rgba(0,0,0,0.08)]"
         />
       </motion.div>
       <motion.h1
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.45 }}
-        className="mt-4 font-display text-4xl font-semibold leading-tight text-foreground sm:text-5xl"
+        className="mt-4 font-display text-5xl font-bold leading-[1.05] text-foreground sm:text-6xl"
       >
-        What animal is that?
+        What animal <span className="text-primary">is that?</span>
       </motion.h1>
       <motion.p
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.45 }}
-        className="mx-auto mt-3 max-w-md text-balance text-muted-foreground"
+        className="mx-auto mt-3 max-w-md text-balance font-medium text-muted-foreground"
       >
-        Snap a photo and Wildeye will name the species, where it lives, and one
+        Snap a photo and Wildeye names the species, where it lives, and one cool
         thing worth knowing about it.
       </motion.p>
 
@@ -292,16 +296,16 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
         className="mt-8 flex flex-col items-center gap-3"
       >
         <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
+          whileHover={{ scale: 1.03, rotate: -1 }}
+          whileTap={{ scale: 0.96 }}
           onClick={onCamera}
-          className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+          className="card-pop inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-bold text-primary-foreground hover:bg-primary/90"
         >
           <Camera className="h-5 w-5" /> Identify an animal
         </motion.button>
         <button
           onClick={onUpload}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
         >
           <Upload className="h-4 w-4" /> Upload a photo instead
         </button>
@@ -319,13 +323,13 @@ function RecentStrip({ sightings }: { sightings: Sighting[] }) {
       className="mt-14"
     >
       <div className="mb-4 flex items-end justify-between">
-        <h2 className="font-display text-xl">Recent sightings</h2>
-        <Link to="/history" className="text-sm text-muted-foreground hover:text-foreground">
+        <h2 className="font-display text-2xl font-bold">Recent sightings</h2>
+        <Link to="/history" className="text-sm font-semibold text-primary hover:underline">
           View all →
         </Link>
       </div>
       <motion.ul
-        className="grid grid-cols-2 gap-3 sm:grid-cols-3"
+        className="grid grid-cols-2 gap-4 sm:grid-cols-3"
         initial="hidden"
         animate="show"
         variants={{
@@ -340,8 +344,8 @@ function RecentStrip({ sightings }: { sightings: Sighting[] }) {
               hidden: { opacity: 0, y: 12 },
               show: { opacity: 1, y: 0 },
             }}
-            whileHover={{ y: -3 }}
-            className="overflow-hidden rounded-2xl border border-border bg-card"
+            whileHover={{ y: -4, rotate: -1 }}
+            className="card-pop overflow-hidden rounded-2xl bg-card"
           >
             <img
               src={s.thumbnail}
@@ -350,7 +354,7 @@ function RecentStrip({ sightings }: { sightings: Sighting[] }) {
               className="aspect-square w-full object-cover"
             />
             <div className="px-3 py-2">
-              <p className="truncate font-display text-sm font-medium">
+              <p className="truncate font-display text-sm font-bold">
                 {s.result.commonName}
               </p>
               <p className="truncate text-xs italic text-muted-foreground">
@@ -410,11 +414,11 @@ function ResultCard({ result }: { result: AnimalIdentification }) {
         className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground"
       >
         {result.group && (
-          <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-1 font-medium text-secondary-foreground">
+          <span className="inline-flex items-center rounded-full border-2 border-border bg-accent px-2.5 py-1 font-bold text-accent-foreground">
             {result.group}
           </span>
         )}
-        <span className="inline-flex items-center gap-1.5">
+        <span className="inline-flex items-center gap-1.5 font-semibold">
           <motion.span
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -427,7 +431,7 @@ function ResultCard({ result }: { result: AnimalIdentification }) {
       <motion.div
         variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}
       >
-        <h3 className="font-display text-2xl font-semibold leading-tight text-foreground">
+        <h3 className="font-display text-3xl font-bold leading-tight text-foreground">
           {result.commonName}
         </h3>
         {result.scientificName && (

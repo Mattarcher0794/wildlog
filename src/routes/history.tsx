@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { PawPrint, Search, Trash2 } from "lucide-react";
 
+import logoMascot from "@/assets/logo-mascot.png";
 import { TabBar } from "@/components/TabBar";
 import { clearSightings, loadSightings, type Sighting } from "@/lib/sightings";
 import { ANIMAL_GROUPS, type AnimalGroup } from "@/lib/identify.functions";
@@ -99,9 +100,9 @@ function HistoryPage() {
         transition={{ duration: 0.4 }}
         className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6"
       >
-        <Link to="/" className="flex items-center gap-2 text-primary">
-          <PawPrint className="h-5 w-5" strokeWidth={2.2} />
-          <span className="font-display text-xl font-semibold">Wildeye</span>
+        <Link to="/" className="flex items-center gap-2 text-foreground">
+          <img src={logoMascot} alt="Wildeye fox mascot" width={512} height={512} className="h-9 w-9" />
+          <span className="font-display text-2xl font-bold">Wildeye</span>
         </Link>
         {sightings.length > 0 && (
           <button
@@ -217,8 +218,8 @@ function HistoryPage() {
                           initial={{ opacity: 0, y: 12 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: Math.min(i, 8) * 0.04, duration: 0.3 }}
-                          whileHover={{ scale: 1.01 }}
-                          className="flex items-start gap-4 overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-sm"
+                          whileHover={{ scale: 1.01, rotate: -0.4 }}
+                          className="card-pop flex items-start gap-4 overflow-hidden rounded-2xl bg-card p-3"
                         >
                           <motion.img
                             whileHover={{ scale: 1.06 }}
@@ -226,10 +227,10 @@ function HistoryPage() {
                             src={s.thumbnail}
                             alt={s.result.commonName}
                             loading="lazy"
-                            className="h-24 w-24 flex-shrink-0 rounded-xl object-cover"
+                            className="h-24 w-24 flex-shrink-0 rounded-xl border-2 border-border object-cover"
                           />
                           <div className="min-w-0 flex-1">
-                            <h3 className="font-display text-lg font-semibold leading-tight">
+                            <h3 className="font-display text-lg font-bold leading-tight">
                               {s.result.commonName}
                             </h3>
                             {s.result.scientificName && (
@@ -283,10 +284,11 @@ function GroupChip({
   return (
     <motion.button
       whileTap={{ scale: 0.95 }}
+      whileHover={{ y: -2 }}
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+      className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-bold transition-colors ${
         active
-          ? "border-primary bg-primary text-primary-foreground"
+          ? "border-border bg-primary text-primary-foreground"
           : "border-border bg-card text-muted-foreground hover:text-foreground"
       }`}
     >
