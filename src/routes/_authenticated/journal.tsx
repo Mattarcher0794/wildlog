@@ -80,16 +80,8 @@ function JournalPage() {
 
   return (
     <main className="min-h-screen pb-28">
-      <motion.header
-        initial={{ y: -16, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4 }}
-        className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6"
-      >
-        <Wordmark />
-      </motion.header>
-
       <section className="mx-auto max-w-3xl px-5 pt-8">
+
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
