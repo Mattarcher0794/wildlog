@@ -17,7 +17,7 @@ export function TabBar() {
       transition={{ type: "spring", stiffness: 220, damping: 24, delay: 0.15 }}
       className="fixed inset-x-0 bottom-0 z-30 flex justify-center pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3"
     >
-      <div className="pointer-events-auto flex items-center gap-1 rounded-full border-2 border-border bg-card p-1.5 shadow-[3px_3px_0_0_var(--color-border)]">
+      <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-border bg-card p-1.5 shadow-[0_6px_20px_-8px_rgba(60,50,72,0.3)]">
         {tabs.map(({ to, label, icon: Icon }) => {
           const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
           return (

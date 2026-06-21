@@ -282,9 +282,9 @@ function GroupChip({
       whileTap={{ scale: 0.95 }}
       whileHover={{ y: -2 }}
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-bold transition-colors ${
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
         active
-          ? "border-border bg-primary text-primary-foreground"
+          ? "border-primary bg-primary text-primary-foreground"
           : "border-border bg-card text-muted-foreground hover:text-foreground"
       }`}
     >
