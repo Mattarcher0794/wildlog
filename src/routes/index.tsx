@@ -339,7 +339,7 @@ function RecentStrip({ sightings }: { sightings: Sighting[] }) {
               hidden: { opacity: 0, y: 12 },
               show: { opacity: 1, y: 0 },
             }}
-            whileHover={{ y: -4, rotate: -1 }}
+            whileHover={{ y: -3 }}
             className="card-pop overflow-hidden rounded-2xl bg-card"
           >
             <img
