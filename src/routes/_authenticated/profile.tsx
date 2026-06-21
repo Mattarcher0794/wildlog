@@ -56,7 +56,7 @@ function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen pb-28">
+    <main className="min-h-screen pb-[calc(7.5rem+env(safe-area-inset-bottom))]">
       <section className="mx-auto max-w-3xl px-5 pt-10">
 
         <motion.div
