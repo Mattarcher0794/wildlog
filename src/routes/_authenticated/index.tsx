@@ -256,12 +256,11 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
         className="mx-auto mt-2 max-w-sm"
       >
         <img
-          src="/src/assets/hero-animals.jpg"
-          alt=""
-          aria-hidden
+          src={heroAnimals}
+          alt="Hand-painted field-journal illustration of a fox, owl, deer and frog in peach, plum and moss"
           width={1024}
           height={1024}
-          className="blob hidden"
+          className="blob h-auto w-full"
         />
       </motion.div>
       <motion.h1
