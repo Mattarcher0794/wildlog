@@ -16,6 +16,21 @@ function isValidPhone(value: string): boolean {
   return /^\+[1-9]\d{6,14}$/.test(value);
 }
 
+function friendlyAuthError(err: unknown, fallback: string): string {
+  const raw =
+    err && typeof err === "object" && "message" in err
+      ? String((err as { message?: unknown }).message ?? "")
+      : typeof err === "string"
+        ? err
+        : "";
+  const msg = raw.trim();
+  if (!msg || msg === "{}" || /SMS provider|phone provider|provider/i.test(msg)) {
+    return fallback;
+  }
+  return msg;
+}
+
+
 export function AccountContact() {
   const [email, setEmail] = useState<string | null>(null);
   const [phone, setPhone] = useState<string | null>(null);
@@ -65,7 +80,7 @@ function EmailRow({ email, onSaved }: { email: string | null; onSaved: () => voi
     const { error } = await supabase.auth.updateUser({ email: value.trim() });
     setBusy(false);
     if (error) {
-      setError(error.message);
+      setError(friendlyAuthError(error, "Couldn't save that email. Please try again."));
       return;
     }
     setSent(true);
@@ -153,7 +168,9 @@ function PhoneRow({ phone, onSaved }: { phone: string | null; onSaved: () => voi
     const { error } = await supabase.auth.updateUser({ phone: normalized });
     setBusy(false);
     if (error) {
-      setError(error.message);
+      setError(
+        friendlyAuthError(error, "Text-message verification isn't available right now."),
+      );
       return;
     }
     setStage("code");

@@ -40,6 +40,21 @@ function isValidPhone(value: string): boolean {
   return /^\+[1-9]\d{6,14}$/.test(value);
 }
 
+function friendlyAuthError(err: unknown): string {
+  const raw =
+    err && typeof err === "object" && "message" in err
+      ? String((err as { message?: unknown }).message ?? "")
+      : typeof err === "string"
+        ? err
+        : "";
+  const msg = raw.trim();
+  if (!msg || msg === "{}" || /SMS provider|phone provider|provider/i.test(msg)) {
+    return "Text-message sign-in isn't available right now. Please use email instead.";
+  }
+  return msg;
+}
+
+
 function AuthPage() {
   const navigate = useNavigate();
   const verifyAuthCode = useServerFn(verifyAuthEmailCode);
@@ -101,7 +116,7 @@ function AuthPage() {
       });
       setBusy(false);
       if (error) {
-        setError(error.message);
+        setError(friendlyAuthError(error));
         return;
       }
       setStep("code");
@@ -119,7 +134,7 @@ function AuthPage() {
     });
     setBusy(false);
     if (error) {
-      setError(error.message);
+      setError(friendlyAuthError(error));
       return;
     }
     setStep("code");
