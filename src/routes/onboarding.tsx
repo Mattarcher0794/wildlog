@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
 
 import heroAnimals from "@/assets/hero-animals.jpg";
-import { Wordmark } from "@/components/Brand";
+import { Splash, Wordmark } from "@/components/Brand";
 import { supabase } from "@/integrations/supabase/client";
 
 export const ONBOARDED_KEY = "wildlog.onboarded.v1";
