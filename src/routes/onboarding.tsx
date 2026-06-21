@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
 
 import heroAnimals from "@/assets/hero-animals.jpg";
-import { Wordmark } from "@/components/Brand";
+import { Splash, Wordmark } from "@/components/Brand";
 import { supabase } from "@/integrations/supabase/client";
 
 export const ONBOARDED_KEY = "wildlog.onboarded.v1";
@@ -51,14 +51,27 @@ const steps: Step[] = [
 function Onboarding() {
   const navigate = useNavigate();
   const [index, setIndex] = useState(0);
+  const [mounted, setMounted] = useState(false);
+  const [checking, setChecking] = useState(true);
   const startX = useRef<number | null>(null);
 
+  // Defer everything to the client: the first render must match the server's
+  // empty placeholder (ssr: false) to avoid a hydration mismatch (#418).
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     // Already signed in? Skip straight into the app.
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/", replace: true });
+      if (data.session) {
+        navigate({ to: "/", replace: true });
+        return;
+      }
+      setChecking(false);
     });
-  }, [navigate]);
+  }, [mounted, navigate]);
 
   function finish() {
     try {
@@ -75,6 +88,11 @@ function Onboarding() {
   }
 
   const step = steps[index];
+
+  // Match the SSR placeholder on first paint, then hold a neutral splash until
+  // the session check resolves — no error-card flash, no wrong-screen flash.
+  if (!mounted) return null;
+  if (checking) return <Splash />;
 
   return (
     <main className="flex min-h-screen flex-col bg-background px-5">

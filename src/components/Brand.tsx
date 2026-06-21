@@ -57,3 +57,19 @@ export function BlobAvatar({
 export function BlobPin({ className = "h-[18px] w-[18px]" }: { className?: string }) {
   return <span aria-hidden className={`blob block bg-current ${className}`} />;
 }
+
+/**
+ * Neutral, deterministic loading screen shown while client-only auth screens
+ * resolve their session/redirect decision. Stable markup avoids hydration
+ * mismatches and the "wrong screen" flash on first paint.
+ */
+export function Splash() {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-background px-5">
+      <span className="flex items-center gap-2.5 text-foreground">
+        <BrandBadge />
+        <span className="font-display text-2xl">Wildlog</span>
+      </span>
+    </main>
+  );
+}
