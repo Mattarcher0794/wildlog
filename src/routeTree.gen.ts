@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedUsernameRouteImport } from './routes/_authenticated/username'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedMapRouteImport } from './routes/_authenticated/map'
 import { Route as AuthenticatedJournalRouteImport } from './routes/_authenticated/journal'
 
@@ -41,6 +42,11 @@ const AuthenticatedUsernameRoute = AuthenticatedUsernameRouteImport.update({
   path: '/username',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedMapRoute = AuthenticatedMapRouteImport.update({
   id: '/map',
   path: '/map',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/map': typeof AuthenticatedMapRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/username': typeof AuthenticatedUsernameRoute
 }
 export interface FileRoutesByTo {
@@ -65,6 +72,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/map': typeof AuthenticatedMapRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/username': typeof AuthenticatedUsernameRoute
   '/': typeof AuthenticatedIndexRoute
 }
@@ -75,14 +83,29 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/_authenticated/journal': typeof AuthenticatedJournalRoute
   '/_authenticated/map': typeof AuthenticatedMapRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/username': typeof AuthenticatedUsernameRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/onboarding' | '/journal' | '/map' | '/username'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/onboarding'
+    | '/journal'
+    | '/map'
+    | '/profile'
+    | '/username'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/onboarding' | '/journal' | '/map' | '/username' | '/'
+  to:
+    | '/auth'
+    | '/onboarding'
+    | '/journal'
+    | '/map'
+    | '/profile'
+    | '/username'
+    | '/'
   id:
     | '__root__'
     | '/_authenticated'
@@ -90,6 +113,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/_authenticated/journal'
     | '/_authenticated/map'
+    | '/_authenticated/profile'
     | '/_authenticated/username'
     | '/_authenticated/'
   fileRoutesById: FileRoutesById
@@ -137,6 +161,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsernameRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/map': {
       id: '/_authenticated/map'
       path: '/map'
@@ -157,6 +188,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedJournalRoute: typeof AuthenticatedJournalRoute
   AuthenticatedMapRoute: typeof AuthenticatedMapRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedUsernameRoute: typeof AuthenticatedUsernameRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
@@ -164,6 +196,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedJournalRoute: AuthenticatedJournalRoute,
   AuthenticatedMapRoute: AuthenticatedMapRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedUsernameRoute: AuthenticatedUsernameRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
