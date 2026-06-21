@@ -323,13 +323,13 @@ function RecentStrip({ sightings }: { sightings: Sighting[] }) {
       className="mt-14"
     >
       <div className="mb-4 flex items-end justify-between">
-        <h2 className="font-display text-xl">Recent sightings</h2>
-        <Link to="/history" className="text-sm text-muted-foreground hover:text-foreground">
+        <h2 className="font-display text-2xl font-bold">Recent sightings</h2>
+        <Link to="/history" className="text-sm font-semibold text-primary hover:underline">
           View all →
         </Link>
       </div>
       <motion.ul
-        className="grid grid-cols-2 gap-3 sm:grid-cols-3"
+        className="grid grid-cols-2 gap-4 sm:grid-cols-3"
         initial="hidden"
         animate="show"
         variants={{
@@ -344,8 +344,8 @@ function RecentStrip({ sightings }: { sightings: Sighting[] }) {
               hidden: { opacity: 0, y: 12 },
               show: { opacity: 1, y: 0 },
             }}
-            whileHover={{ y: -3 }}
-            className="overflow-hidden rounded-2xl border border-border bg-card"
+            whileHover={{ y: -4, rotate: -1 }}
+            className="card-pop overflow-hidden rounded-2xl bg-card"
           >
             <img
               src={s.thumbnail}
@@ -354,7 +354,7 @@ function RecentStrip({ sightings }: { sightings: Sighting[] }) {
               className="aspect-square w-full object-cover"
             />
             <div className="px-3 py-2">
-              <p className="truncate font-display text-sm font-medium">
+              <p className="truncate font-display text-sm font-bold">
                 {s.result.commonName}
               </p>
               <p className="truncate text-xs italic text-muted-foreground">
