@@ -168,7 +168,9 @@ function PhoneRow({ phone, onSaved }: { phone: string | null; onSaved: () => voi
     const { error } = await supabase.auth.updateUser({ phone: normalized });
     setBusy(false);
     if (error) {
-      setError(error.message);
+      setError(
+        friendlyAuthError(error, "Text-message verification isn't available right now."),
+      );
       return;
     }
     setStage("code");
