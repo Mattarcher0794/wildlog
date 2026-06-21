@@ -5,8 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
@@ -30,68 +30,84 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-sunny: var(--sunny);
-  --color-teal: var(--teal);
-  --color-sky: var(--sky);
-  --font-display: "Fredoka", ui-rounded, system-ui, sans-serif;
-  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+
+  /* Wildlog brand tokens — sampled from the hand-painted sign */
+  --color-peach: var(--peach);
+  --color-peach-light: var(--peach-light);
+  --color-sand: var(--sand);
+  --color-plum: var(--plum);
+  --color-cream: var(--cream);
+  --color-paper: var(--paper);
+  --color-moss: var(--moss);
+  --color-moss-light: var(--moss-light);
+
+  --font-display: "Sniglet", ui-rounded, "Trebuchet MS", sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
 :root {
-  --radius: 1.25rem;
-  /* Warm cream */
-  --background: oklch(0.965 0.018 75);
-  /* Deep aubergine plum — the logo ink */
-  --foreground: oklch(0.3 0.055 350);
-  --card: oklch(0.99 0.01 75);
-  --card-foreground: oklch(0.3 0.055 350);
-  --popover: oklch(0.99 0.01 75);
-  --popover-foreground: oklch(0.3 0.055 350);
-  /* Muted coral / terracotta — the logo circle */
-  --primary: oklch(0.71 0.13 42);
-  --primary-foreground: oklch(0.28 0.055 350);
-  /* Soft peach */
-  --secondary: oklch(0.92 0.04 55);
-  --secondary-foreground: oklch(0.32 0.055 350);
-  --muted: oklch(0.93 0.022 65);
-  --muted-foreground: oklch(0.5 0.05 350);
-  /* Deep plum accent (two-tone with coral) */
-  --accent: oklch(0.4 0.08 350);
-  --accent-foreground: oklch(0.97 0.015 75);
-  --destructive: oklch(0.58 0.21 27);
-  --destructive-foreground: oklch(0.99 0.005 75);
-  --border: oklch(0.3 0.055 350);
-  --input: oklch(0.86 0.025 55);
-  --ring: oklch(0.71 0.13 42);
-  /* Harmonized two-tone accents */
-  --sunny: oklch(0.78 0.1 48);
-  --teal: oklch(0.4 0.08 350);
-  --sky: oklch(0.55 0.09 355);
+  --radius: 1.125rem;
+
+  /* Brand core */
+  --peach: #DDA688;
+  --peach-light: #F0D4C0;
+  --plum: #3C3248;
+  --plum-deep: #241D2E;
+  --plum-mid: #544869;
+  --cream: #F7EDE4;
+  --sand: #E8C9AE;
+  --paper: #FFFCF9;
+  --moss: #6B7A4F;
+  --moss-light: #8B9D68;
+
+  /* Light mode */
+  --background: #F7EDE4;
+  --foreground: #3C3248;
+  --card: #FFFCF9;
+  --card-foreground: #3C3248;
+  --popover: #FFFCF9;
+  --popover-foreground: #3C3248;
+  /* Moss is the action colour in both modes */
+  --primary: #6B7A4F;
+  --primary-foreground: #FFFCF9;
+  --secondary: #E8C9AE;
+  --secondary-foreground: #3C3248;
+  --muted: #EFE0D2;
+  --muted-foreground: #6E6177;
+  /* Peach is identity */
+  --accent: #DDA688;
+  --accent-foreground: #3C3248;
+  /* Desaturated rust, kept close to palette */
+  --destructive: #B5543E;
+  --destructive-foreground: #FFFCF9;
+  --border: rgba(60, 50, 72, 0.12);
+  --input: rgba(60, 50, 72, 0.18);
+  --ring: #6B7A4F;
 }
 
 .dark {
-  --background: oklch(0.24 0.04 350);
-  --foreground: oklch(0.95 0.015 75);
-  --card: oklch(0.29 0.045 350);
-  --card-foreground: oklch(0.95 0.015 75);
-  --popover: oklch(0.29 0.045 350);
-  --popover-foreground: oklch(0.95 0.015 75);
-  --primary: oklch(0.72 0.13 42);
-  --primary-foreground: oklch(0.22 0.04 350);
-  --secondary: oklch(0.36 0.06 350);
-  --secondary-foreground: oklch(0.95 0.015 75);
-  --muted: oklch(0.34 0.05 350);
-  --muted-foreground: oklch(0.78 0.03 60);
-  --accent: oklch(0.78 0.1 48);
-  --accent-foreground: oklch(0.24 0.05 350);
-  --destructive: oklch(0.58 0.21 27);
-  --destructive-foreground: oklch(0.99 0.005 75);
-  --border: oklch(0.95 0.015 75 / 16%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.72 0.13 42);
-  --sunny: oklch(0.78 0.1 48);
-  --teal: oklch(0.78 0.1 48);
-  --sky: oklch(0.6 0.09 355);
+  --background: #241D2E;
+  --foreground: #F7EDE4;
+  --card: #544869;
+  --card-foreground: #F7EDE4;
+  --popover: #544869;
+  --popover-foreground: #F7EDE4;
+  --primary: #8B9D68;
+  --primary-foreground: #241D2E;
+  --secondary: #3C3248;
+  --secondary-foreground: #F7EDE4;
+  --muted: #3A3147;
+  --muted-foreground: #C7B9CF;
+  --accent: #DDA688;
+  --accent-foreground: #241D2E;
+  --destructive: #C46A52;
+  --destructive-foreground: #FFFCF9;
+  --border: rgba(247, 237, 228, 0.14);
+  --input: rgba(247, 237, 228, 0.2);
+  --ring: #8B9D68;
+  /* Brand ink shifts for dark surfaces */
+  --plum: #F0D4C0;
 }
 
 @layer base {
@@ -103,17 +119,32 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
   }
 
+  /* Display face: bubble lettering, always uppercase, tight */
   h1, h2, h3, .font-display {
     font-family: var(--font-display);
-    font-weight: 600;
-    letter-spacing: -0.01em;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    line-height: 1.05;
   }
 }
 
-/* Subtle flat outline used on cards and chips — refined, not cartoony */
+/* The signature blob — used for pins, thumbnails, avatars, spinners */
+@utility blob {
+  border-radius: 60% 40% 55% 45% / 50% 55% 45% 50%;
+}
+
+/* Soft logbook card — gentle border + warm soft shadow, never harsh */
+@utility card-soft {
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 16px -8px rgba(60, 50, 72, 0.18);
+}
+
+/* Kept for back-compat with existing components */
 @utility card-pop {
-  border-width: 1.5px;
-  box-shadow: 3px 3px 0 0 color-mix(in oklab, var(--color-border) 22%, transparent);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 16px -8px rgba(60, 50, 72, 0.18);
 }

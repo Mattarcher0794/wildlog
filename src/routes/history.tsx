@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { PawPrint, Search, Trash2 } from "lucide-react";
+import { Search, Trash2 } from "lucide-react";
 
-import logoBadge from "@/assets/logo-badge.png";
+import { Wordmark } from "@/components/Brand";
 import { TabBar } from "@/components/TabBar";
 import { clearSightings, loadSightings, type Sighting } from "@/lib/sightings";
 import { ANIMAL_GROUPS, type AnimalGroup } from "@/lib/identify.functions";
@@ -11,10 +11,10 @@ import { ANIMAL_GROUPS, type AnimalGroup } from "@/lib/identify.functions";
 export const Route = createFileRoute("/history")({
   head: () => ({
     meta: [
-      { title: "Field journal · Wildeye" },
+      { title: "Field journal · Wildlog" },
       {
         name: "description",
-        content: "Your complete log of animal identifications, kept in your pocket field journal.",
+        content: "Your complete Wildlog — every wildlife sighting you've identified, grouped and kept in your pocket field journal.",
       },
     ],
   }),
@@ -100,10 +100,7 @@ function HistoryPage() {
         transition={{ duration: 0.4 }}
         className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6"
       >
-        <Link to="/" className="flex items-center gap-2 text-foreground">
-          <img src={logoBadge} alt="Wildeye owl badge" width={512} height={512} className="h-9 w-9" />
-          <span className="font-display text-2xl font-bold">Wildeye</span>
-        </Link>
+        <Wordmark />
         {sightings.length > 0 && (
           <button
             onClick={clearAll}
@@ -120,10 +117,10 @@ function HistoryPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <h1 className="font-display text-3xl font-semibold">Field journal</h1>
+          <h1 className="font-display text-3xl">Field journal</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {sightings.length === 0
-              ? "Every animal you identify will land here."
+              ? "Every animal you spot will land here."
               : `${sightings.length} sighting${sightings.length === 1 ? "" : "s"} · ${uniqueSpecies} species`}
           </p>
         </motion.div>
@@ -138,17 +135,16 @@ function HistoryPage() {
             <motion.div
               animate={{ y: [0, -6, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <PawPrint className="mx-auto h-8 w-8 text-muted-foreground" />
-            </motion.div>
-            <p className="mt-3 text-sm text-muted-foreground">
-              No sightings yet. Go snap your first animal.
+              className="mx-auto h-14 w-14 blob bg-peach/60"
+            />
+            <p className="mt-4 text-sm text-muted-foreground">
+              No sightings yet. Spot something? Log it here.
             </p>
             <Link
               to="/"
-              className="mt-5 inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              className="mt-5 inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
             >
-              Start identifying
+              Log a sighting
             </Link>
           </motion.div>
         ) : (
@@ -219,7 +215,7 @@ function HistoryPage() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: Math.min(i, 8) * 0.04, duration: 0.3 }}
                           whileHover={{ scale: 1.01, rotate: -0.4 }}
-                          className="card-pop flex items-start gap-4 overflow-hidden rounded-2xl bg-card p-3"
+                          className="card-soft flex items-start gap-4 overflow-hidden rounded-2xl bg-card p-3"
                         >
                           <motion.img
                             whileHover={{ scale: 1.06 }}
@@ -227,10 +223,10 @@ function HistoryPage() {
                             src={s.thumbnail}
                             alt={s.result.commonName}
                             loading="lazy"
-                            className="h-24 w-24 flex-shrink-0 rounded-xl border-2 border-border object-cover"
+                            className="blob h-24 w-24 flex-shrink-0 object-cover"
                           />
                           <div className="min-w-0 flex-1">
-                            <h3 className="font-display text-lg font-bold leading-tight">
+                            <h3 className="text-lg font-bold leading-tight text-foreground">
                               {s.result.commonName}
                             </h3>
                             {s.result.scientificName && (
@@ -241,7 +237,7 @@ function HistoryPage() {
                             <p className="mt-1 line-clamp-3 text-sm text-foreground/85">
                               {s.result.description}
                             </p>
-                            <p className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+                            <p className="mt-1.5 font-mono text-[11px] text-muted-foreground">
                               {new Date(s.at).toLocaleString()}
                             </p>
                           </div>
@@ -286,9 +282,9 @@ function GroupChip({
       whileTap={{ scale: 0.95 }}
       whileHover={{ y: -2 }}
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-bold transition-colors ${
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
         active
-          ? "border-border bg-primary text-primary-foreground"
+          ? "border-primary bg-primary text-primary-foreground"
           : "border-border bg-card text-muted-foreground hover:text-foreground"
       }`}
     >
