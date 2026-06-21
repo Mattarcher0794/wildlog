@@ -10,9 +10,7 @@ export function BrandBadge({ className = "h-9 w-9" }: { className?: string }) {
       aria-hidden
       className={`relative inline-flex shrink-0 items-center justify-center rounded-full bg-peach ring-2 ring-paper ring-inset ${className}`}
     >
-      <span className="font-display leading-none text-plum" style={{ fontSize: "0.62em" }}>
-        W
-      </span>
+      <span className="font-display text-base leading-none text-plum">W</span>
     </span>
   );
 }
