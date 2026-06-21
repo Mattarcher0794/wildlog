@@ -232,43 +232,56 @@ function Home() {
   );
 }
 
-function CtaDock({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => void }) {
-  return (
-    <motion.div
-      initial={{ y: 24, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.35, duration: 0.4 }}
-      className="fixed inset-x-0 z-20 flex flex-col items-center gap-[10px]"
-      style={{ bottom: "calc(104px + env(safe-area-inset-bottom))" }}
-    >
-      <motion.button
-        whileTap={{ scale: 0.97 }}
-        onClick={onCamera}
-        className="flex h-14 w-[88%] max-w-md items-center justify-center gap-2 rounded-full text-base font-bold text-white shadow-[0_8px_22px_-10px_rgba(0,0,0,0.45)]"
-        style={{ backgroundColor: "#4a6b3a" }}
-      >
-        <Camera className="h-5 w-5" strokeWidth={2.2} /> Start a sighting
-      </motion.button>
-      <motion.button
-        whileTap={{ scale: 0.97 }}
-        onClick={onUpload}
-        className="flex h-14 w-[88%] max-w-md items-center justify-center gap-2 rounded-full border bg-white text-base font-semibold"
-        style={{ color: "#4a6b3a", borderColor: "rgba(74,107,58,0.15)" }}
-      >
-        <Upload className="h-5 w-5" strokeWidth={2.2} /> Upload a previous photo
-      </motion.button>
-    </motion.div>
-  );
-}
-
-function Hero() {
+function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => void }) {
   return (
     <div className="text-center">
+      <motion.h1
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1, duration: 0.45 }}
+        className="font-display text-5xl leading-[1.05] text-foreground sm:text-6xl"
+      >
+        What did you <span className="text-primary">spot?</span>
+      </motion.h1>
+      <motion.p
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.18, duration: 0.45 }}
+        className="mx-auto mt-3 max-w-md text-balance font-medium text-muted-foreground"
+      >
+        Snap a photo and Wildlog names the species, where it lives, and one thing
+        worth knowing — then keeps it in your journal.
+      </motion.p>
+
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.26, duration: 0.4 }}
+        className="mx-auto mt-7 flex w-full max-w-sm flex-col gap-[10px]"
+      >
+        <motion.button
+          whileTap={{ scale: 0.97 }}
+          onClick={onCamera}
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-full text-[15px] font-semibold text-white shadow-[0_5px_14px_-9px_rgba(0,0,0,0.4)]"
+          style={{ backgroundColor: "#4a6b3a" }}
+        >
+          <Camera className="h-[18px] w-[18px]" strokeWidth={2.1} /> Start a sighting
+        </motion.button>
+        <motion.button
+          whileTap={{ scale: 0.97 }}
+          onClick={onUpload}
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-full border bg-white text-[15px] font-medium"
+          style={{ color: "#4a6b3a", borderColor: "rgba(74,107,58,0.15)" }}
+        >
+          <Upload className="h-[18px] w-[18px]" strokeWidth={2.1} /> Upload a previous photo
+        </motion.button>
+      </motion.div>
+
       <motion.div
         initial={{ scale: 0.92, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }}
-        className="mx-auto mt-0 max-w-[15rem]"
+        transition={{ duration: 0.5, ease: "easeOut", delay: 0.34 }}
+        className="mx-auto mt-7 max-w-[13rem]"
       >
         <img
           src={heroAnimals}
@@ -278,26 +291,10 @@ function Hero() {
           className="blob h-auto w-full"
         />
       </motion.div>
-      <motion.h1
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.45 }}
-        className="mt-4 font-display text-5xl leading-[1.05] text-foreground sm:text-6xl"
-      >
-        What did you <span className="text-primary">spot?</span>
-      </motion.h1>
-      <motion.p
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.45 }}
-        className="mx-auto mt-3 max-w-md text-balance font-medium text-muted-foreground"
-      >
-        Snap a photo and Wildlog names the species, where it lives, and one thing
-        worth knowing — then keeps it in your journal.
-      </motion.p>
     </div>
   );
 }
+
 
 function RecentStrip({ sightings }: { sightings: DbSighting[] }) {
   return (
