@@ -38,11 +38,9 @@ const usernameRule = z
   .pipe(z.string().regex(/^[a-z0-9_]{3,20}$/));
 
 function publicClient() {
-  return createClient<Database>(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PUBLISHABLE_KEY!,
-    { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
-  );
+  return createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+  });
 }
 
 export const getMyProfile = createServerFn({ method: "GET" })
@@ -77,9 +75,7 @@ export const claimUsername = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<Profile> => {
     const parsed = usernameRule.safeParse(data.username);
     if (!parsed.success) {
-      throw new Error(
-        "Usernames are 3–20 characters: lowercase letters, numbers and underscores.",
-      );
+      throw new Error("Usernames are 3–20 characters: lowercase letters, numbers and underscores.");
     }
     const { data: taken } = await context.supabase
       .from("profiles")
@@ -128,9 +124,7 @@ export const getPublicProfile = createServerFn({ method: "GET" })
       };
       return { ...rest, lat: approx_lat, lng: approx_lng } as PublicSighting;
     });
-    const speciesCount = new Set(
-      sightings.map((s) => s.common_name.toLowerCase()),
-    ).size;
+    const speciesCount = new Set(sightings.map((s) => s.common_name.toLowerCase())).size;
     return {
       username: profile.username,
       joinedAt: profile.created_at,
