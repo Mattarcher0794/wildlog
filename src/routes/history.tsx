@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { PawPrint, Search, Trash2 } from "lucide-react";
 
-import logoMascot from "@/assets/logo-mascot.png";
+import logoBadge from "@/assets/logo-badge.png";
 import { TabBar } from "@/components/TabBar";
 import { clearSightings, loadSightings, type Sighting } from "@/lib/sightings";
 import { ANIMAL_GROUPS, type AnimalGroup } from "@/lib/identify.functions";
@@ -101,7 +101,7 @@ function HistoryPage() {
         className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6"
       >
         <Link to="/" className="flex items-center gap-2 text-foreground">
-          <img src={logoMascot} alt="Wildeye fox mascot" width={512} height={512} className="h-9 w-9" />
+          <img src={logoBadge} alt="Wildeye owl badge" width={512} height={512} className="h-9 w-9" />
           <span className="font-display text-2xl font-bold">Wildeye</span>
         </Link>
         {sightings.length > 0 && (

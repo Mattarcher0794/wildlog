@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Camera, Loader2, RotateCcw, Upload, X } from "lucide-react";
 
 import heroAnimals from "@/assets/hero-animals.jpg";
-import logoMascot from "@/assets/logo-mascot.png";
+import logoBadge from "@/assets/logo-badge.png";
 import { TabBar } from "@/components/TabBar";
 import { identifyAnimal, type AnimalIdentification } from "@/lib/identify.functions";
 import {
@@ -100,20 +100,17 @@ function Home() {
         transition={{ duration: 0.4 }}
         className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6"
       >
-        <Link to="/" className="flex items-center gap-2 text-foreground">
-          <motion.img
-            src={logoMascot}
-            alt="Wildeye fox mascot"
+        <Link to="/" className="flex items-center gap-2.5 text-foreground">
+          <img
+            src={logoBadge}
+            alt="Wildeye owl badge"
             width={512}
             height={512}
-            initial={{ rotate: -20, scale: 0.6 }}
-            animate={{ rotate: 0, scale: 1 }}
-            transition={{ type: "spring", stiffness: 260, damping: 14 }}
             className="h-9 w-9"
           />
           <span className="font-display text-2xl font-bold tracking-tight">Wildeye</span>
         </Link>
-        <span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold uppercase tracking-wide text-secondary-foreground">
+        <span className="rounded-full border-[1.5px] border-border px-3 py-1 text-xs font-bold uppercase tracking-wide text-foreground">
           Spot it · Name it
         </span>
       </motion.header>
@@ -256,19 +253,17 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
   return (
     <div className="text-center">
       <motion.div
-        initial={{ scale: 0.85, opacity: 0, rotate: -4 }}
-        animate={{ scale: 1, opacity: 1, rotate: 0 }}
-        transition={{ type: "spring", stiffness: 180, damping: 18, delay: 0.05 }}
+        initial={{ scale: 0.92, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }}
         className="mx-auto mt-2 max-w-sm"
       >
-        <motion.img
+        <img
           src={heroAnimals}
-          alt="Bold flat illustration of animals — a fox, owl, frog, fish, turtle and butterfly"
+          alt="Flat two-tone illustration of animals — a fox, owl, frog and fish in coral and deep plum"
           width={1024}
           height={1024}
-          animate={{ y: [0, -8, 0] }}
-          transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-          className="h-auto w-full rounded-[2rem] drop-shadow-[6px_8px_0_rgba(0,0,0,0.08)]"
+          className="h-auto w-full rounded-[2rem]"
         />
       </motion.div>
       <motion.h1
@@ -296,8 +291,8 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
         className="mt-8 flex flex-col items-center gap-3"
       >
         <motion.button
-          whileHover={{ scale: 1.03, rotate: -1 }}
-          whileTap={{ scale: 0.96 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
           onClick={onCamera}
           className="card-pop inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-bold text-primary-foreground hover:bg-primary/90"
         >
@@ -344,7 +339,7 @@ function RecentStrip({ sightings }: { sightings: Sighting[] }) {
               hidden: { opacity: 0, y: 12 },
               show: { opacity: 1, y: 0 },
             }}
-            whileHover={{ y: -4, rotate: -1 }}
+            whileHover={{ y: -3 }}
             className="card-pop overflow-hidden rounded-2xl bg-card"
           >
             <img
