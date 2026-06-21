@@ -174,7 +174,7 @@ function AuthPage() {
                       <InputOTPSlot
                         key={i}
                         index={i}
-                        className="h-14 w-12 rounded-2xl !border-l border-input bg-card text-xl font-semibold first:rounded-l-2xl last:rounded-r-2xl"
+                        className="h-14 w-12 shrink-0 rounded-2xl !border-l border-input bg-card text-xl font-semibold first:rounded-l-2xl last:rounded-r-2xl"
                       />
                     ))}
                   </InputOTPGroup>
