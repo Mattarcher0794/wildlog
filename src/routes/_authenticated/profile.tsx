@@ -5,8 +5,7 @@ import { motion } from "motion/react";
 import { Share2, LogOut, Check } from "lucide-react";
 
 import { AccountContact } from "@/components/AccountContact";
-import { BlobAvatar, Wordmark } from "@/components/Brand";
-import { TabBar } from "@/components/TabBar";
+import { BlobAvatar } from "@/components/Brand";
 import { useMyProfile, useRequireUsername } from "@/hooks/use-profile";
 import { supabase } from "@/integrations/supabase/client";
 import { listMySightings } from "@/lib/sightings.functions";
