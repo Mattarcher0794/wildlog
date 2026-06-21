@@ -254,7 +254,7 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
         initial={{ scale: 0.92, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }}
-        className="mx-auto mt-2 max-w-sm"
+        className="mx-auto mt-1 w-3/5 max-w-[260px]"
       >
         <img
           src={heroAnimals}
@@ -268,7 +268,7 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.45 }}
-        className="mt-4 font-display text-5xl leading-[1.05] text-foreground sm:text-6xl"
+        className="mt-3 font-display text-5xl leading-[1.05] text-foreground sm:text-6xl"
       >
         What did you <span className="text-primary">spot?</span>
       </motion.h1>
