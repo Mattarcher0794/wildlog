@@ -100,18 +100,9 @@ function Home() {
         transition={{ duration: 0.4 }}
         className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6"
       >
-        <Link to="/" className="flex items-center gap-2.5 text-foreground">
-          <img
-            src={logoBadge}
-            alt="Wildeye owl badge"
-            width={512}
-            height={512}
-            className="h-9 w-9"
-          />
-          <span className="font-display text-2xl font-bold tracking-tight">Wildeye</span>
-        </Link>
-        <span className="rounded-full border-[1.5px] border-border px-3 py-1 text-xs font-bold uppercase tracking-wide text-foreground">
-          Spot it · Name it
+        <Wordmark />
+        <span className="rounded-full border-[1.5px] border-border px-3 py-1 font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
+          Field journal
         </span>
       </motion.header>
 
