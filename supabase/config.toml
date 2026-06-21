@@ -1,1 +1,5 @@
 project_id = "rwqdtlarizycdjxvorhc"
+
+[auth.email]
+# Force 6-digit sign-in codes (backend default had been issuing 8-digit codes).
+otp_length = 6
