@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Camera, Loader2, RotateCcw, Upload, X } from "lucide-react";
 
 import heroAnimals from "@/assets/hero-animals.jpg";
-import logoMascot from "@/assets/logo-mascot.png";
+import logoBadge from "@/assets/logo-badge.png";
 import { TabBar } from "@/components/TabBar";
 import { identifyAnimal, type AnimalIdentification } from "@/lib/identify.functions";
 import {
@@ -100,20 +100,17 @@ function Home() {
         transition={{ duration: 0.4 }}
         className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6"
       >
-        <Link to="/" className="flex items-center gap-2 text-foreground">
-          <motion.img
-            src={logoMascot}
-            alt="Wildeye fox mascot"
+        <Link to="/" className="flex items-center gap-2.5 text-foreground">
+          <img
+            src={logoBadge}
+            alt="Wildeye owl badge"
             width={512}
             height={512}
-            initial={{ rotate: -20, scale: 0.6 }}
-            animate={{ rotate: 0, scale: 1 }}
-            transition={{ type: "spring", stiffness: 260, damping: 14 }}
             className="h-9 w-9"
           />
           <span className="font-display text-2xl font-bold tracking-tight">Wildeye</span>
         </Link>
-        <span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold uppercase tracking-wide text-secondary-foreground">
+        <span className="rounded-full border-[1.5px] border-border px-3 py-1 text-xs font-bold uppercase tracking-wide text-foreground">
           Spot it · Name it
         </span>
       </motion.header>
