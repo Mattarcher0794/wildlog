@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { PawPrint, Search, Trash2 } from "lucide-react";
+import { Search, Trash2 } from "lucide-react";
 
-import logoBadge from "@/assets/logo-badge.png";
+import { Wordmark } from "@/components/Brand";
 import { TabBar } from "@/components/TabBar";
 import { clearSightings, loadSightings, type Sighting } from "@/lib/sightings";
 import { ANIMAL_GROUPS, type AnimalGroup } from "@/lib/identify.functions";
@@ -11,10 +11,10 @@ import { ANIMAL_GROUPS, type AnimalGroup } from "@/lib/identify.functions";
 export const Route = createFileRoute("/history")({
   head: () => ({
     meta: [
-      { title: "Field journal · Wildeye" },
+      { title: "Field journal · Wildlog" },
       {
         name: "description",
-        content: "Your complete log of animal identifications, kept in your pocket field journal.",
+        content: "Your complete Wildlog — every wildlife sighting you've identified, grouped and kept in your pocket field journal.",
       },
     ],
   }),
