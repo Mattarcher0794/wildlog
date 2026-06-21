@@ -291,8 +291,8 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
         className="mt-8 flex flex-col items-center gap-3"
       >
         <motion.button
-          whileHover={{ scale: 1.03, rotate: -1 }}
-          whileTap={{ scale: 0.96 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
           onClick={onCamera}
           className="card-pop inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-bold text-primary-foreground hover:bg-primary/90"
         >
