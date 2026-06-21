@@ -1,52 +1,42 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Search, Trash2 } from "lucide-react";
+import { Search, Lock, Globe } from "lucide-react";
 
 import { Wordmark } from "@/components/Brand";
 import { TabBar } from "@/components/TabBar";
-import { clearSightings, loadSightings, type Sighting } from "@/lib/sightings";
+import { useRequireUsername } from "@/hooks/use-profile";
 import { ANIMAL_GROUPS, type AnimalGroup } from "@/lib/identify.functions";
+import { listMySightings, type DbSighting } from "@/lib/sightings.functions";
 
-export const Route = createFileRoute("/history")({
-  head: () => ({
-    meta: [
-      { title: "Field journal · Wildlog" },
-      {
-        name: "description",
-        content: "Your complete Wildlog — every wildlife sighting you've identified, grouped and kept in your pocket field journal.",
-      },
-    ],
-  }),
-  component: HistoryPage,
+export const Route = createFileRoute("/_authenticated/journal")({
+  component: JournalPage,
 });
 
-function groupOf(s: Sighting): AnimalGroup {
-  const g = s.result.group;
-  if (g && (ANIMAL_GROUPS as readonly string[]).includes(g)) return g;
+function groupOf(s: DbSighting): AnimalGroup {
+  const g = s.animal_group;
+  if (g && (ANIMAL_GROUPS as readonly string[]).includes(g)) return g as AnimalGroup;
   return "Other";
 }
 
-function HistoryPage() {
-  const [sightings, setSightings] = useState<Sighting[]>([]);
+function JournalPage() {
+  useRequireUsername();
+  const sightingsQuery = useQuery({
+    queryKey: ["sightings"],
+    queryFn: () => listMySightings(),
+  });
+  const sightings = useMemo(
+    () => (sightingsQuery.data ?? []).filter((s) => s.is_animal),
+    [sightingsQuery.data],
+  );
+
   const [query, setQuery] = useState("");
   const [activeGroup, setActiveGroup] = useState<AnimalGroup | "All">("All");
 
-  useEffect(() => {
-    setSightings(loadSightings());
-  }, []);
-
-  function clearAll() {
-    if (!confirm("Clear your entire field journal? This cannot be undone.")) return;
-    clearSightings();
-    setSightings([]);
-  }
-
-  // Only show group chips that actually have entries.
   const groupCounts = useMemo(() => {
     const counts = new Map<AnimalGroup, number>();
     for (const s of sightings) {
-      if (!s.result.isAnimal) continue;
       const g = groupOf(s);
       counts.set(g, (counts.get(g) ?? 0) + 1);
     }
@@ -64,15 +54,14 @@ function HistoryPage() {
       if (activeGroup !== "All" && groupOf(s) !== activeGroup) return false;
       if (!q) return true;
       return (
-        s.result.commonName.toLowerCase().includes(q) ||
-        s.result.scientificName.toLowerCase().includes(q)
+        s.common_name.toLowerCase().includes(q) ||
+        (s.scientific_name ?? "").toLowerCase().includes(q)
       );
     });
   }, [sightings, query, activeGroup]);
 
-  // Group the filtered list into sections by animal type.
   const sections = useMemo(() => {
-    const map = new Map<AnimalGroup, Sighting[]>();
+    const map = new Map<AnimalGroup, DbSighting[]>();
     for (const s of filtered) {
       const g = groupOf(s);
       if (!map.has(g)) map.set(g, []);
@@ -85,15 +74,12 @@ function HistoryPage() {
   }, [filtered]);
 
   const uniqueSpecies = useMemo(
-    () =>
-      new Set(
-        sightings.filter((s) => s.result.isAnimal).map((s) => s.result.commonName.toLowerCase()),
-      ).size,
+    () => new Set(sightings.map((s) => s.common_name.toLowerCase())).size,
     [sightings],
   );
 
   return (
-    <main className="min-h-screen pb-32">
+    <main className="min-h-screen pb-28">
       <motion.header
         initial={{ y: -16, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -101,14 +87,6 @@ function HistoryPage() {
         className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6"
       >
         <Wordmark />
-        {sightings.length > 0 && (
-          <button
-            onClick={clearAll}
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-destructive"
-          >
-            <Trash2 className="h-4 w-4" /> Clear
-          </button>
-        )}
       </motion.header>
 
       <section className="mx-auto max-w-3xl px-5 pt-8">
@@ -173,7 +151,7 @@ function HistoryPage() {
               >
                 <GroupChip
                   label="All"
-                  count={sightings.filter((s) => s.result.isAnimal).length}
+                  count={sightings.length}
                   active={activeGroup === "All"}
                   onClick={() => setActiveGroup("All")}
                 />
@@ -200,7 +178,7 @@ function HistoryPage() {
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <h2 className="mb-3 flex items-center gap-2 font-display text-lg font-semibold">
+                    <h2 className="mb-3 flex items-center gap-2 font-display text-lg">
                       {section.group}
                       <span className="text-xs font-normal text-muted-foreground">
                         {section.items.length}
@@ -217,35 +195,48 @@ function HistoryPage() {
                           whileHover={{ scale: 1.01, rotate: -0.4 }}
                           className="card-journal flex items-start gap-4 bg-card p-3"
                         >
-                          <motion.img
-                            whileHover={{ scale: 1.06 }}
-                            transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                            src={s.thumbnail}
-                            alt={s.result.commonName}
-                            loading="lazy"
-                            className={`${i % 2 === 0 ? "blob" : "blob-alt"} h-24 w-24 flex-shrink-0 object-cover`}
-                          />
+                          {s.image_url && (
+                            <motion.img
+                              whileHover={{ scale: 1.06 }}
+                              transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                              src={s.image_url}
+                              alt={s.common_name}
+                              loading="lazy"
+                              className={`${i % 2 === 0 ? "blob" : "blob-alt"} h-24 w-24 flex-shrink-0 object-cover`}
+                            />
+                          )}
                           <div className="min-w-0 flex-1">
                             <div className="flex items-start justify-between gap-2">
                               <h3 className="text-lg font-bold leading-tight text-foreground">
-                                {s.result.commonName}
+                                {s.common_name}
                               </h3>
-                              {s.id === sightings[0]?.id && (
-                                <span className="flex-shrink-0 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground">
-                                  Just logged
-                                </span>
-                              )}
+                              <span
+                                className={`flex flex-shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                                  s.is_public
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-secondary text-secondary-foreground"
+                                }`}
+                              >
+                                {s.is_public ? (
+                                  <Globe className="h-3 w-3" />
+                                ) : (
+                                  <Lock className="h-3 w-3" />
+                                )}
+                                {s.is_public ? "Public" : "Private"}
+                              </span>
                             </div>
-                            {s.result.scientificName && (
+                            {s.scientific_name && (
                               <p className="text-xs italic text-muted-foreground">
-                                {s.result.scientificName}
+                                {s.scientific_name}
                               </p>
                             )}
-                            <p className="mt-1 line-clamp-3 text-sm text-foreground/85">
-                              {s.result.description}
-                            </p>
+                            {s.description && (
+                              <p className="mt-1 line-clamp-3 text-sm text-foreground/85">
+                                {s.description}
+                              </p>
+                            )}
                             <p className="mt-1.5 font-mono text-[11px] text-muted-foreground">
-                              {new Date(s.at).toLocaleString()}
+                              {new Date(s.created_at).toLocaleString()}
                             </p>
                           </div>
                         </motion.li>

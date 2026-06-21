@@ -1,38 +1,9 @@
-import type { AnimalIdentification } from "./identify.functions";
+// Client-side helpers for capturing a sighting: image downscaling, file reading,
+// and best-effort GPS capture. Persistence now lives in Lovable Cloud
+// (see sightings.functions.ts).
 
-export type Sighting = {
-  id: string;
-  at: number;
-  thumbnail: string; // small data URL
-  result: AnimalIdentification;
-};
-
-const KEY = "plumage.sightings.v1";
-
-export function loadSightings(): Sighting[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as Sighting[];
-  } catch {
-    return [];
-  }
-}
-
-export function saveSighting(s: Sighting) {
-  if (typeof window === "undefined") return;
-  const all = [s, ...loadSightings()];
-  localStorage.setItem(KEY, JSON.stringify(all));
-}
-
-export function clearSightings() {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(KEY);
-}
-
-// Downscale an image data URL to a small thumbnail (for storage).
-export async function makeThumbnail(dataUrl: string, max = 320): Promise<string> {
+// Downscale an image data URL to a small thumbnail for inline storage.
+export async function makeThumbnail(dataUrl: string, max = 480): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
@@ -58,5 +29,21 @@ export function fileToDataUrl(file: File): Promise<string> {
     r.onload = () => resolve(r.result as string);
     r.onerror = () => reject(r.error ?? new Error("Read failed"));
     r.readAsDataURL(file);
+  });
+}
+
+// Best-effort current location. Resolves to null if denied/unavailable —
+// a sighting is still worth logging without a pin.
+export function getCurrentLocation(): Promise<{ lat: number; lng: number } | null> {
+  return new Promise((resolve) => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      resolve(null);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => resolve(null),
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 },
+    );
   });
 }

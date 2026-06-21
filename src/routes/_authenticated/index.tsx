@@ -1,82 +1,83 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Camera, RotateCcw, Upload, X } from "lucide-react";
+import { Camera, RotateCcw, Upload, X, Lock, Globe } from "lucide-react";
 
 import heroAnimals from "@/assets/hero-animals.jpg";
 import { Wordmark } from "@/components/Brand";
 import { TabBar } from "@/components/TabBar";
+import { useRequireUsername } from "@/hooks/use-profile";
 import { identifyAnimal, type AnimalIdentification } from "@/lib/identify.functions";
+import { fileToDataUrl, getCurrentLocation, makeThumbnail } from "@/lib/sightings";
 import {
-  fileToDataUrl,
-  loadSightings,
-  makeThumbnail,
-  saveSighting,
-  type Sighting,
-} from "@/lib/sightings";
+  createSighting,
+  listMySightings,
+  setSightingVisibility,
+  type DbSighting,
+} from "@/lib/sightings.functions";
 
-export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Wildlog — Log every wildlife sighting" },
-      {
-        name: "description",
-        content:
-          "Wildlog is your pocket field journal. Snap any animal, name the species in seconds, and keep a warm running log of everything you spot in the wild.",
-      },
-      { property: "og:title", content: "Wildlog — Log every wildlife sighting" },
-      {
-        property: "og:description",
-        content: "Your pocket field journal. Snap an animal, name it, log it.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+export const Route = createFileRoute("/_authenticated/")({
   component: Home,
 });
 
 type Phase = "idle" | "loading" | "result" | "error";
 
 function Home() {
+  useRequireUsername();
+  const queryClient = useQueryClient();
   const identify = useServerFn(identifyAnimal);
+  const create = useServerFn(createSighting);
   const fileRef = useRef<HTMLInputElement>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [result, setResult] = useState<AnimalIdentification | null>(null);
+  const [saved, setSaved] = useState<DbSighting | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [sightings, setSightings] = useState<Sighting[]>([]);
 
-  useEffect(() => {
-    setSightings(loadSightings());
-  }, []);
+  const sightingsQuery = useQuery({
+    queryKey: ["sightings"],
+    queryFn: () => listMySightings(),
+  });
+  const sightings = sightingsQuery.data ?? [];
 
   async function handleFile(file: File) {
     setError(null);
     setResult(null);
+    setSaved(null);
     try {
       const dataUrl = await fileToDataUrl(file);
       setImageUrl(dataUrl);
       setPhase("loading");
+      const locationPromise = getCurrentLocation();
       const out = await identify({ data: { imageDataUrl: dataUrl } });
       setResult(out);
       setPhase("result");
-      try {
-        const thumb = await makeThumbnail(dataUrl, 320);
-        const s: Sighting = {
-          id: crypto.randomUUID(),
-          at: Date.now(),
-          thumbnail: thumb,
-          result: out,
-        };
-        saveSighting(s);
-        setSightings(loadSightings());
-      } catch {
-        // ignore
-      }
+
+      const [thumb, location] = await Promise.all([
+        makeThumbnail(dataUrl, 480).catch(() => null),
+        locationPromise,
+      ]);
+      const row = await create({
+        data: {
+          image_url: thumb,
+          common_name: out.commonName,
+          scientific_name: out.scientificName || null,
+          animal_group: out.group || null,
+          confidence: out.confidence || null,
+          description: out.description || null,
+          note: out.note || null,
+          is_animal: out.isAnimal,
+          is_public: false,
+          lat: location?.lat ?? null,
+          lng: location?.lng ?? null,
+        },
+      });
+      setSaved(row);
+      queryClient.invalidateQueries({ queryKey: ["sightings"] });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
       setPhase("error");
@@ -87,13 +88,14 @@ function Home() {
     setPhase("idle");
     setImageUrl(null);
     setResult(null);
+    setSaved(null);
     setError(null);
     if (fileRef.current) fileRef.current.value = "";
     if (uploadRef.current) uploadRef.current.value = "";
   }
 
   return (
-    <main className="min-h-screen pb-32">
+    <main className="min-h-screen pb-28">
       <motion.header
         initial={{ y: -16, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -170,7 +172,12 @@ function Home() {
                       </motion.div>
                     )}
                     {phase === "result" && result && (
-                      <ResultCard key="res" result={result} />
+                      <ResultCard
+                        key="res"
+                        result={result}
+                        saved={saved}
+                        onVisibilityChange={(s) => setSaved(s)}
+                      />
                     )}
                     {phase === "error" && (
                       <motion.div
@@ -271,8 +278,8 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
         transition={{ delay: 0.3, duration: 0.45 }}
         className="mx-auto mt-3 max-w-md text-balance font-medium text-muted-foreground"
       >
-        Snap a photo and Wildlog names the species, where it lives, and one
-        thing worth knowing — then keeps it in your journal.
+        Snap a photo and Wildlog names the species, where it lives, and one thing
+        worth knowing — then keeps it in your journal.
       </motion.p>
 
       <motion.div
@@ -300,7 +307,7 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
   );
 }
 
-function RecentStrip({ sightings }: { sightings: Sighting[] }) {
+function RecentStrip({ sightings }: { sightings: DbSighting[] }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -309,8 +316,8 @@ function RecentStrip({ sightings }: { sightings: Sighting[] }) {
       className="mt-14"
     >
       <div className="mb-4 flex items-end justify-between">
-        <h2 className="font-display text-2xl font-bold">Recent sightings</h2>
-        <Link to="/history" className="text-sm font-semibold text-primary hover:underline">
+        <h2 className="font-display text-2xl">Recent sightings</h2>
+        <Link to="/journal" className="text-sm font-semibold text-primary hover:underline">
           View all →
         </Link>
       </div>
@@ -318,28 +325,24 @@ function RecentStrip({ sightings }: { sightings: Sighting[] }) {
         className="grid grid-cols-2 gap-4 sm:grid-cols-3"
         initial="hidden"
         animate="show"
-        variants={{
-          hidden: {},
-          show: { transition: { staggerChildren: 0.06 } },
-        }}
+        variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06 } } }}
       >
         {sightings.map((s, i) => (
           <motion.li
             key={s.id}
-            variants={{
-              hidden: { opacity: 0, y: 12 },
-              show: { opacity: 1, y: 0 },
-            }}
+            variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
             whileHover={{ y: -3 }}
             className="card-journal bg-card p-3"
           >
             <div className="relative mx-auto w-fit">
-              <img
-                src={s.thumbnail}
-                alt={s.result.commonName}
-                loading="lazy"
-                className={`${i % 2 === 0 ? "blob" : "blob-alt"} aspect-square w-full object-cover`}
-              />
+              {s.image_url && (
+                <img
+                  src={s.image_url}
+                  alt={s.common_name}
+                  loading="lazy"
+                  className={`${i % 2 === 0 ? "blob" : "blob-alt"} aspect-square w-full object-cover`}
+                />
+              )}
               {i === 0 && (
                 <span className="absolute -right-1 -top-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground shadow-sm">
                   Just logged
@@ -348,10 +351,10 @@ function RecentStrip({ sightings }: { sightings: Sighting[] }) {
             </div>
             <div className="px-1 py-2">
               <p className="truncate text-sm font-semibold text-foreground">
-                {s.result.commonName}
+                {s.common_name}
               </p>
               <p className="truncate text-xs italic text-muted-foreground">
-                {s.result.scientificName || "—"}
+                {s.scientific_name || "—"}
               </p>
             </div>
           </motion.li>
@@ -374,7 +377,26 @@ function ScanLine() {
   );
 }
 
-function ResultCard({ result }: { result: AnimalIdentification }) {
+function ResultCard({
+  result,
+  saved,
+  onVisibilityChange,
+}: {
+  result: AnimalIdentification;
+  saved: DbSighting | null;
+  onVisibilityChange: (s: DbSighting) => void;
+}) {
+  const setVisibility = useServerFn(setSightingVisibility);
+  const queryClient = useQueryClient();
+  const visibilityMutation = useMutation({
+    mutationFn: (isPublic: boolean) =>
+      setVisibility({ data: { id: saved!.id, is_public: isPublic } }),
+    onSuccess: (_d, isPublic) => {
+      if (saved) onVisibilityChange({ ...saved, is_public: isPublic });
+      queryClient.invalidateQueries({ queryKey: ["sightings"] });
+    },
+  });
+
   if (!result.isAnimal) {
     return (
       <motion.div
@@ -389,12 +411,14 @@ function ResultCard({ result }: { result: AnimalIdentification }) {
       </motion.div>
     );
   }
+
   const dot =
     result.confidence === "high"
       ? "bg-primary"
       : result.confidence === "medium"
         ? "bg-accent"
         : "bg-muted-foreground/50";
+
   return (
     <motion.div
       initial="hidden"
@@ -421,14 +445,14 @@ function ResultCard({ result }: { result: AnimalIdentification }) {
           {result.confidence} confidence
         </span>
       </motion.div>
-      <motion.div
-        variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}
-      >
-        <h3 className="font-display text-3xl font-bold leading-tight text-foreground">
+      <motion.div variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}>
+        <h3 className="font-display text-3xl leading-tight text-foreground">
           {result.commonName}
         </h3>
         {result.scientificName && (
-          <p className="text-sm italic text-muted-foreground">{result.scientificName}</p>
+          <p className="text-sm italic text-muted-foreground">
+            {result.scientificName}
+          </p>
         )}
       </motion.div>
       <motion.p
@@ -445,6 +469,60 @@ function ResultCard({ result }: { result: AnimalIdentification }) {
           {result.note}
         </motion.p>
       )}
+
+      {saved && (
+        <motion.div variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}>
+          <VisibilityToggle
+            isPublic={saved.is_public}
+            busy={visibilityMutation.isPending}
+            onChange={(v) => visibilityMutation.mutate(v)}
+          />
+        </motion.div>
+      )}
     </motion.div>
+  );
+}
+
+function VisibilityToggle({
+  isPublic,
+  busy,
+  onChange,
+}: {
+  isPublic: boolean;
+  busy: boolean;
+  onChange: (isPublic: boolean) => void;
+}) {
+  return (
+    <div className="mt-1 rounded-2xl border border-border bg-background/60 p-3">
+      <div className="flex rounded-full bg-muted p-1">
+        <button
+          disabled={busy}
+          onClick={() => onChange(false)}
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors ${
+            !isPublic
+              ? "bg-plum text-paper"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Lock className="h-3.5 w-3.5" /> Private
+        </button>
+        <button
+          disabled={busy}
+          onClick={() => onChange(true)}
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors ${
+            isPublic
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Globe className="h-3.5 w-3.5" /> Public
+        </button>
+      </div>
+      <p className="mt-2 text-center text-xs text-muted-foreground">
+        {isPublic
+          ? "Showing on your public journal."
+          : "Keeping this one private."}
+      </p>
+    </div>
   );
 }
