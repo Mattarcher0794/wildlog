@@ -1,10 +1,10 @@
-import type { BirdIdentification } from "./identify.functions";
+import type { AnimalIdentification } from "./identify.functions";
 
 export type Sighting = {
   id: string;
   at: number;
   thumbnail: string; // small data URL
-  result: BirdIdentification;
+  result: AnimalIdentification;
 };
 
 const KEY = "plumage.sightings.v1";
