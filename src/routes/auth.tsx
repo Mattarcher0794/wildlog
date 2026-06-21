@@ -227,8 +227,28 @@ function AuthPage() {
                 </button>
               </div>
 
-              <form onSubmit={sendCode} className="mt-6 space-y-3">
-                {method === "email" ? (
+              {method === "phone" ? (
+                <div className="mt-6 rounded-2xl border border-dashed border-border bg-card px-5 py-6 text-center">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-peach">
+                    <Phone className="h-5 w-5 text-plum" />
+                  </div>
+                  <p className="mt-3 text-base font-semibold text-foreground">
+                    Phone sign-in is coming soon
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    We're putting the finishing touches on text-message codes. For now, sign in with
+                    your email.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => switchMethod("email")}
+                    className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                  >
+                    <Mail className="h-4 w-4" /> Use email instead
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={sendCode} className="mt-6 space-y-3">
                   <input
                     type="email"
                     required
@@ -237,29 +257,18 @@ function AuthPage() {
                     placeholder="you@email.com"
                     className="w-full rounded-2xl border border-input bg-card px-4 py-3.5 text-base outline-none ring-ring focus:border-ring focus:ring-2"
                   />
-                ) : (
-                  <input
-                    type="tel"
-                    required
-                    inputMode="tel"
-                    autoComplete="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+44 7700 900123"
-                    className="w-full rounded-2xl border border-input bg-card px-4 py-3.5 text-base outline-none ring-ring focus:border-ring focus:ring-2"
-                  />
-                )}
-                {error && <p className="text-sm text-destructive">{error}</p>}
-                <motion.button
-                  whileTap={{ scale: 0.98 }}
-                  type="submit"
-                  disabled={busy || (method === "email" ? !email.trim() : !phone.trim())}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-semibold text-primary-foreground shadow-[0_6px_18px_-8px_rgba(60,50,72,0.45)] hover:bg-primary/90 disabled:opacity-60"
-                >
-                  {method === "email" ? <Mail className="h-5 w-5" /> : <Phone className="h-5 w-5" />}
-                  {busy ? "Sending…" : "Send code"}
-                </motion.button>
-              </form>
+                  {error && <p className="text-sm text-destructive">{error}</p>}
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    type="submit"
+                    disabled={busy || !email.trim()}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-4 text-base font-semibold text-primary-foreground shadow-[0_6px_18px_-8px_rgba(60,50,72,0.45)] hover:bg-primary/90 disabled:opacity-60"
+                  >
+                    <Mail className="h-5 w-5" />
+                    {busy ? "Sending…" : "Send code"}
+                  </motion.button>
+                </form>
+              )}
             </>
           ) : (
             <div className="text-center">
