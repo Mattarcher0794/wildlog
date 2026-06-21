@@ -1,10 +1,14 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { Camera, BookOpen } from "lucide-react";
+import { Camera, BookOpen, User } from "lucide-react";
+
+import { BlobPin } from "@/components/Brand";
 
 const tabs = [
   { to: "/", label: "Log", icon: Camera },
-  { to: "/history", label: "Journal", icon: BookOpen },
+  { to: "/journal", label: "Journal", icon: BookOpen },
+  { to: "/map", label: "Map", icon: null },
+  { to: "/profile", label: "Profile", icon: User },
 ] as const;
 
 export function TabBar() {
@@ -12,39 +16,33 @@ export function TabBar() {
 
   return (
     <motion.nav
-      initial={{ y: 60, opacity: 0 }}
+      initial={{ y: 80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ type: "spring", stiffness: 220, damping: 24, delay: 0.15 }}
-      className="fixed inset-x-0 bottom-0 z-30 flex justify-center pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3"
+      transition={{ type: "spring", stiffness: 220, damping: 26, delay: 0.1 }}
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card pb-[env(safe-area-inset-bottom)]"
     >
-      <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-border bg-card p-1.5 shadow-[0_6px_20px_-8px_rgba(60,50,72,0.3)]">
+      <ul className="mx-auto flex max-w-3xl items-stretch">
         {tabs.map(({ to, label, icon: Icon }) => {
           const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
           return (
-            <Link
-              key={to}
-              to={to}
-              className="relative flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold"
-            >
-              {active && (
-                <motion.span
-                  layoutId="tab-pill"
-                  className="absolute inset-0 rounded-full bg-primary"
-                  transition={{ type: "spring", stiffness: 380, damping: 32 }}
-                />
-              )}
-              <span
-                className={`relative z-10 flex items-center gap-2 ${
-                  active ? "text-primary-foreground" : "text-muted-foreground"
+            <li key={to} className="flex-1">
+              <Link
+                to={to}
+                className={`flex flex-col items-center justify-center gap-1 py-2.5 transition-colors ${
+                  active ? "text-primary" : "text-muted-foreground"
                 }`}
               >
-                <Icon className="h-4 w-4" />
-                {label}
-              </span>
-            </Link>
+                {Icon ? (
+                  <Icon className="h-[18px] w-[18px]" />
+                ) : (
+                  <BlobPin />
+                )}
+                <span className="text-[11px] font-medium leading-none">{label}</span>
+              </Link>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </motion.nav>
   );
 }
