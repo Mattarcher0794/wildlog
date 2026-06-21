@@ -129,8 +129,6 @@ function ProfilePage() {
           </button>
         </motion.div>
       </section>
-
-      <TabBar />
     </main>
   );
 }
