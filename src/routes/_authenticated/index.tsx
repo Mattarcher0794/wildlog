@@ -234,8 +234,6 @@ function Home() {
           onUpload={() => uploadRef.current?.click()}
         />
       )}
-
-      <TabBar />
     </main>
   );
 }
