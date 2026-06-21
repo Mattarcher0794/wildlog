@@ -2,9 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Camera, PawPrint, Loader2, RotateCcw, Upload, X } from "lucide-react";
+import { Camera, Loader2, RotateCcw, Upload, X } from "lucide-react";
 
 import heroAnimals from "@/assets/hero-animals.jpg";
+import logoMascot from "@/assets/logo-mascot.png";
 import { TabBar } from "@/components/TabBar";
 import { identifyAnimal, type AnimalIdentification } from "@/lib/identify.functions";
 import {
