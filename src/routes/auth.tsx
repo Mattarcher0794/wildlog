@@ -67,9 +67,19 @@ function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [mounted, setMounted] = useState(false);
+  const [checking, setChecking] = useState(true);
   const verifyingRef = useRef(false);
 
+  // Defer to the client so the first render matches the server's empty
+  // placeholder (ssr: false) — prevents the hydration mismatch (#418) that
+  // briefly surfaced the root error card on this route.
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
         navigate({ to: "/", replace: true });
@@ -81,9 +91,13 @@ function AuthPage() {
       } catch {
         onboarded = false;
       }
-      if (!onboarded) navigate({ to: "/onboarding", replace: true });
+      if (!onboarded) {
+        navigate({ to: "/onboarding", replace: true });
+        return;
+      }
+      setChecking(false);
     });
-  }, [navigate]);
+  }, [mounted, navigate]);
 
   useEffect(() => {
     if (cooldown <= 0) return;
