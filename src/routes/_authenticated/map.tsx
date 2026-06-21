@@ -6,14 +6,13 @@ import { motion } from "motion/react";
 import { Wordmark } from "@/components/Brand";
 import { TabBar } from "@/components/TabBar";
 import { SightingDetailModal, type DetailSighting } from "@/components/SightingDetail";
+import { SightingsMap } from "@/components/SightingsMap";
 import { useRequireUsername } from "@/hooks/use-profile";
 import { listMySightings, type DbSighting } from "@/lib/sightings.functions";
 
 export const Route = createFileRoute("/_authenticated/map")({
   component: MapPage,
 });
-
-type Placed = { sighting: DbSighting; x: number; y: number };
 
 function MapPage() {
   useRequireUsername();
@@ -30,24 +29,6 @@ function MapPage() {
       ),
     [sightingsQuery.data],
   );
-
-  const placed = useMemo<Placed[]>(() => {
-    if (located.length === 0) return [];
-    const lats = located.map((s) => s.lat as number);
-    const lngs = located.map((s) => s.lng as number);
-    const minLat = Math.min(...lats);
-    const maxLat = Math.max(...lats);
-    const minLng = Math.min(...lngs);
-    const maxLng = Math.max(...lngs);
-    const spanLat = maxLat - minLat || 1;
-    const spanLng = maxLng - minLng || 1;
-    return located.map((s) => ({
-      sighting: s,
-      // pad to 10–90% so pins never hug the edges
-      x: 10 + ((((s.lng as number) - minLng) / spanLng) * 80),
-      y: 10 + ((1 - ((s.lat as number) - minLat) / spanLat) * 80),
-    }));
-  }, [located]);
 
   return (
     <main className="min-h-screen pb-28">
