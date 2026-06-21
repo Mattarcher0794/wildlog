@@ -7,7 +7,7 @@ import { Mail, Phone, ArrowLeft } from "lucide-react";
 import { Wordmark } from "@/components/Brand";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { supabase } from "@/integrations/supabase/client";
-import { verifyAuthEmailCode } from "@/lib/auth.functions";
+import { testSignIn, verifyAuthEmailCode } from "@/lib/auth.functions";
 import { ONBOARDED_KEY } from "./onboarding";
 
 export const Route = createFileRoute("/auth")({
