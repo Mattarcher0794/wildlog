@@ -14,7 +14,7 @@ import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 const EMAIL_SUBJECTS: Record<string, string> = {
   signup: 'Confirm your email',
   invite: "You've been invited",
-  magiclink: 'Your login link',
+  magiclink: 'Your wildlog sign-in code',
   recovery: 'Reset your password',
   email_change: 'Confirm your new email',
   reauthentication: 'Your verification code',
@@ -34,7 +34,10 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 const SITE_NAME = "wildlog"
 const SENDER_DOMAIN = "notify.wildlog.life"
 const ROOT_DOMAIN = "wildlog.life"
-const FROM_DOMAIN = "wildlog.life"
+// Send From the authenticated sending subdomain so the visible From domain is
+// aligned with SPF + DKIM (Mailgun signs for notify.wildlog.life). The root
+// domain wildlog.life has no SPF/DKIM/DMARC, which was sending mail to junk.
+const FROM_DOMAIN = "notify.wildlog.life"
 
 function redactEmail(email: string | null | undefined): string {
   if (!email) return '***'
