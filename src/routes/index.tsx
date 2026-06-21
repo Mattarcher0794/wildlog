@@ -268,7 +268,7 @@ function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => vo
           height={1024}
           animate={{ y: [0, -8, 0] }}
           transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-          className="h-auto w-full drop-shadow-[6px_8px_0_rgba(0,0,0,0.08)]"
+          className="h-auto w-full rounded-[2rem] drop-shadow-[6px_8px_0_rgba(0,0,0,0.08)]"
         />
       </motion.div>
       <motion.h1
