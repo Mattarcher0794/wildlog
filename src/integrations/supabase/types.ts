@@ -122,6 +122,8 @@ export type Database = {
       sightings: {
         Row: {
           animal_group: string | null
+          approx_lat: number | null
+          approx_lng: number | null
           common_name: string
           confidence: string | null
           created_at: string
@@ -138,6 +140,8 @@ export type Database = {
         }
         Insert: {
           animal_group?: string | null
+          approx_lat?: number | null
+          approx_lng?: number | null
           common_name: string
           confidence?: string | null
           created_at?: string
@@ -154,6 +158,8 @@ export type Database = {
         }
         Update: {
           animal_group?: string | null
+          approx_lat?: number | null
+          approx_lng?: number | null
           common_name?: string
           confidence?: string | null
           created_at?: string
