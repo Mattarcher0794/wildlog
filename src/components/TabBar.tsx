@@ -42,7 +42,9 @@ export function TabBar() {
                 className="flex min-h-[44px] items-center justify-center gap-2 rounded-full"
                 style={{
                   backgroundColor: active ? "#9CAF88" : "transparent",
-                  color: active ? "#2B2620" : "rgba(241,234,217,0.9)",
+                  // Light pill → dark navy content; dark nav bar → consistent
+                  // cream content. One rule, no white/cream mixing.
+                  color: active ? "#3C3248" : "rgba(241,234,217,0.9)",
                   transition: reduceMotion
                     ? "none"
                     : "background-color 200ms ease, padding 200ms ease",
@@ -57,8 +59,8 @@ export function TabBar() {
                     className="h-5 w-5 shrink-0 rounded-full"
                     style={{
                       backgroundColor: active
-                        ? "#2B2620"
-                        : "rgba(255,255,255,0.9)",
+                        ? "#3C3248"
+                        : "rgba(241,234,217,0.9)",
                     }}
                   />
                 )}

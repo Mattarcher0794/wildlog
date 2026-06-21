@@ -65,31 +65,37 @@ function AuthedShell() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden">
-      <header className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6">
-        <Wordmark />
-        {showPill && (
-          <span className="rounded-full border-[1.5px] border-border px-3 py-1 font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
-            Field journal
-          </span>
-        )}
-      </header>
+    <>
+      {/* overflow-x-hidden contains the horizontal slide transition. The TabBar
+          must live OUTSIDE this wrapper: an overflow ancestor turns into a
+          scroll container that breaks `position: fixed` on iOS Safari, making
+          the nav scroll with the page instead of staying pinned. */}
+      <div className="relative min-h-screen overflow-x-hidden">
+        <header className="mx-auto flex max-w-3xl items-center justify-between px-5 pt-6">
+          <Wordmark />
+          {showPill && (
+            <span className="rounded-full border-[1.5px] border-border px-3 py-1 font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
+              Field journal
+            </span>
+          )}
+        </header>
 
-      <AnimatePresence mode="popLayout" custom={direction} initial={false}>
-        <motion.div
-          key={pathname}
-          custom={direction}
-          variants={variants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={{ duration: 0.28, ease: "easeOut" }}
-        >
-          <Outlet />
-        </motion.div>
-      </AnimatePresence>
+        <AnimatePresence mode="popLayout" custom={direction} initial={false}>
+          <motion.div
+            key={pathname}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.28, ease: "easeOut" }}
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
       <TabBar />
-    </div>
+    </>
   );
 }
