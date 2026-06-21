@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const ONBOARDED_KEY = "wildlog.onboarded.v1";
 
 export const Route = createFileRoute("/onboarding")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Welcome to Wildlog" },
