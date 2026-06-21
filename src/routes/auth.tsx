@@ -214,6 +214,11 @@ function AuthPage() {
 
   const sentTo = method === "phone" ? normalizePhone(phone) : email;
 
+  // Match the SSR placeholder on first paint, then hold a neutral splash until
+  // the session/onboarding check resolves.
+  if (!mounted) return null;
+  if (checking) return <Splash />;
+
   return (
     <main className="flex min-h-screen flex-col bg-background px-5">
       <header className="flex items-center justify-center pt-10">
