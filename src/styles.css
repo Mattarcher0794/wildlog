@@ -103,9 +103,6 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    background-image:
-      radial-gradient(oklch(0.66 0.18 28 / 0.05) 1.5px, transparent 1.5px);
-    background-size: 22px 22px;
   }
 
   h1, h2, h3, .font-display {
@@ -115,8 +112,8 @@
   }
 }
 
-/* Chunky playful outline used on cards and chips for the sticker look */
+/* Subtle flat outline used on cards and chips — refined, not cartoony */
 @utility card-pop {
-  border-width: 2px;
-  box-shadow: 4px 4px 0 0 var(--color-border);
+  border-width: 1.5px;
+  box-shadow: 3px 3px 0 0 color-mix(in oklab, var(--color-border) 22%, transparent);
 }
