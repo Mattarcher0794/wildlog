@@ -58,6 +58,7 @@ function friendlyAuthError(err: unknown): string {
 function AuthPage() {
   const navigate = useNavigate();
   const verifyAuthCode = useServerFn(verifyAuthEmailCode);
+  const runTestSignIn = useServerFn(testSignIn);
   const [method, setMethod] = useState<Method>("email");
   const [step, setStep] = useState<Step>("contact");
   const [email, setEmail] = useState("");
