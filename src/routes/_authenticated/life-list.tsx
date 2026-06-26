@@ -57,7 +57,7 @@ export const Route = createFileRoute("/_authenticated/life-list")({
   component: LifeListPage,
 });
 
-const ORGANIC = ["organic-1", "organic-2", "organic-3", "organic-4"] as const;
+const ORGANIC = ["blob", "blob-alt"] as const;
 
 function LifeListPage() {
   useRequireUsername();
