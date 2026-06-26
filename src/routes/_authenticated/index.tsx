@@ -49,7 +49,7 @@ export const Route = createFileRoute("/_authenticated/")({
   component: LogFlow,
 });
 
-type Phase = "dashboard" | "capture" | "scanning" | "result" | "saved";
+type Phase = "dashboard" | "capture" | "scanning" | "result";
 type Loc = { lat: number; lng: number } | null;
 
 function LogFlow() {
