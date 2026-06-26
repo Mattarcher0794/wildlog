@@ -226,7 +226,7 @@ function JournalPage() {
                               whileHover={{ scale: 1.06 }}
                               transition={{ type: "spring", stiffness: 260, damping: 20 }}
                               src={s.image_url}
-                              alt={s.common_name}
+                              alt={`Photo of a ${s.common_name}`}
                               loading="lazy"
                               className={`${i % 2 === 0 ? "blob" : "blob-alt"} h-24 w-24 flex-shrink-0 object-cover`}
                             />
