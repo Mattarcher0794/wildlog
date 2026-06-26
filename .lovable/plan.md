@@ -1,9 +1,7 @@
-Remove the "Saved to your life list" confirmation screen from the sighting flow.
+Fix the cut-off "g" in the TabBar active tab label.
 
-### Changes
-1. **In `src/routes/_authenticated/index.tsx`:**
-   - Change the `save()` function so that after a successful `createSighting`, it calls `goHome()` instead of `setPhase("saved")`.
-   - Remove the `phase === "saved"` branch inside `<AnimatePresence>`.
-   - Delete the `SavedStep` component definition from the bottom of the file.
+**Problem:** The active tab label in `src/components/TabBar.tsx` uses `leading-none` (line-height: 1) with `overflow-hidden`, which clips the descender of the "g" in "Log".
 
-After the user taps **"Save to Life List ✦"**, the app will return directly to the Log (home) dashboard instead of showing an intermediate confirmation screen.
+**Fix:** Change `leading-none` to `leading-tight` (or add `pb-0.5`) on the active tab label span (line 80) so descenders render fully without being clipped by `overflow-hidden`.
+
+No other files touched.

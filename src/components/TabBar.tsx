@@ -77,7 +77,7 @@ export function TabBar() {
                 )}
                 {active && (
                   <span
-                    className="overflow-hidden whitespace-nowrap text-[11px] font-semibold leading-none"
+                    className="overflow-hidden whitespace-nowrap text-[11px] font-semibold leading-tight"
                     style={{ fontFamily: "Inter, system-ui, sans-serif" }}
                   >
                     {label}
