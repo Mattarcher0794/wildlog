@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowLeft,
@@ -11,15 +11,22 @@ import {
   Globe,
   Lock,
   MapPin,
+  Plus,
   RotateCcw,
   Upload,
   Zap,
 } from "lucide-react";
 
+import heroAnimals from "@/assets/hero-animals.jpg";
 import { useRequireUsername } from "@/hooks/use-profile";
 import { identifyAnimal, type AnimalIdentification } from "@/lib/identify.functions";
 import { fileToDataUrl, getCurrentLocation, makeThumbnail } from "@/lib/sightings";
-import { createSighting } from "@/lib/sightings.functions";
+import {
+  createSighting,
+  listMySightings,
+  resolvePlaceNames,
+  type DbSighting,
+} from "@/lib/sightings.functions";
 import { speciesGradient } from "@/lib/species-color";
 
 export const Route = createFileRoute("/_authenticated/")({
