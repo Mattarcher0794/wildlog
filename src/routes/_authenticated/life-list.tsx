@@ -288,8 +288,7 @@ export function BadgePill({
 }) {
   const label = badgeLabel(badge);
   if (!label) return null;
-  const variant =
-    badge === "rare" ? "badge-amber" : badge === "new" ? "badge-moss" : "badge-peach";
+  const variant = "badge-moss";
   return <span className={`badge ${variant} ${className}`}>{label}</span>;
 }
 
