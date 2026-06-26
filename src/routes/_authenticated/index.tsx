@@ -207,16 +207,6 @@ function LogFlow() {
               />
             ) : null)}
 
-          {phase === "saved" && (
-            <SavedStep
-              key="saved"
-              name={speciesName}
-              group={result?.group}
-              imageUrl={thumb}
-              onAnother={reset}
-              onView={() => navigate({ to: "/life-list" })}
-            />
-          )}
         </AnimatePresence>
       </section>
 
