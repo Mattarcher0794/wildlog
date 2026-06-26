@@ -48,7 +48,7 @@ export const Route = createFileRoute("/_authenticated/")({
   component: LogFlow,
 });
 
-type Phase = "dashboard" | "capture" | "scanning" | "result";
+type Phase = "dashboard" | "scanning" | "result";
 type Loc = { lat: number; lng: number } | null;
 
 function LogFlow() {
@@ -87,12 +87,6 @@ function LogFlow() {
     setIsPublic(false);
     if (cameraRef.current) cameraRef.current.value = "";
     if (uploadRef.current) uploadRef.current.value = "";
-  }
-
-  // Back to the empty viewfinder (used by "try another photo" / "log another").
-  function reset() {
-    clearTransient();
-    setPhase("capture");
   }
 
   // Back to the home dashboard.
