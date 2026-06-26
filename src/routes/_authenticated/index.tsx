@@ -152,7 +152,7 @@ function LogFlow() {
         },
       });
       queryClient.invalidateQueries({ queryKey: ["sightings"] });
-      setPhase("saved");
+      goHome();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save. Try again.");
     } finally {
