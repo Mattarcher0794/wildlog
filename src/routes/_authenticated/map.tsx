@@ -9,6 +9,24 @@ import { useRequireUsername } from "@/hooks/use-profile";
 import { listMySightings, type DbSighting } from "@/lib/sightings.functions";
 
 export const Route = createFileRoute("/_authenticated/map")({
+  head: () => ({
+    meta: [
+      { title: "Sightings Map — Wildlog" },
+      {
+        name: "description",
+        content:
+          "See where you've spotted wildlife on an interactive map, with every located sighting from your Wildlog field journal plotted by location.",
+      },
+      { property: "og:title", content: "Sightings Map — Wildlog" },
+      {
+        property: "og:description",
+        content:
+          "See where you've spotted wildlife on an interactive map of your Wildlog field journal.",
+      },
+      { property: "og:url", content: "https://wildlog.life/map" },
+    ],
+    links: [{ rel: "canonical", href: "https://wildlog.life/map" }],
+  }),
   component: MapPage,
 });
 
