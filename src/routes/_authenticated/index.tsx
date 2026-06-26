@@ -456,9 +456,9 @@ function ResultCard({
         </span>
       </motion.div>
       <motion.div variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}>
-        <h3 className="font-display text-3xl leading-tight text-foreground">
+        <h2 className="font-display text-3xl leading-tight text-foreground">
           {result.commonName}
-        </h3>
+        </h2>
         {result.scientificName && (
           <p className="text-sm italic text-muted-foreground">
             {result.scientificName}
