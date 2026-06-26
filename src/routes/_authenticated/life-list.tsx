@@ -199,7 +199,7 @@ function SpeciesCard({ entry, index }: { entry: SpeciesEntry; index: number }) {
       <Link
         to="/species/$species"
         params={{ species: entry.key }}
-        className="card-journal block bg-card p-2.5"
+        className="card-journal relative block bg-card p-2.5"
       >
         <div className={`relative ${radius} aspect-square w-full overflow-hidden`}>
           {entry.latest.image_url ? (
@@ -215,13 +215,16 @@ function SpeciesCard({ entry, index }: { entry: SpeciesEntry; index: number }) {
               style={{ background: speciesGradient(entry.group, entry.commonName) }}
             />
           )}
-          {label && <BadgePill badge={entry.badge} className="absolute left-2 top-2" />}
           {entry.count > 1 && (
             <span className="absolute bottom-2 right-2 rounded-full bg-plum/85 px-2 py-0.5 font-mono text-[9px] font-bold text-paper backdrop-blur">
               ×{entry.count}
             </span>
           )}
         </div>
+        {/* Badge sits on the card (outside the clipped blob) so it never gets cut off */}
+        {label && (
+          <BadgePill badge={entry.badge} className="absolute left-4 top-4 z-10" />
+        )}
         <h3 className="mt-2.5 truncate font-display text-[13px] leading-tight">
           {entry.commonName}
         </h3>
