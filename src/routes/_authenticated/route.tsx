@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 // Tab order left → right, mirrors the bottom nav.
-const TAB_ORDER = ["/", "/journal", "/map", "/profile"] as const;
+const TAB_ORDER = ["/", "/life-list", "/map", "/profile"] as const;
 
 function tabIndex(pathname: string): number {
   if (pathname === "/") return 0;
@@ -49,7 +49,10 @@ function AuthedShell() {
     return <Outlet />;
   }
 
+  // The Log tab gets a small "field journal" tagline pill; collection screens
+  // carry their own large headers, so the pill would only add clutter there.
   const showPill = pathname === "/";
+
 
 
   const variants = {

@@ -1,7 +1,65 @@
 import { createServerFn } from "@tanstack/react-start";
+import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
+
+export type NearbySpeciesRow = {
+  commonName: string;
+  scientificName: string | null;
+  group: string | null;
+  count: number;
+};
+
+/**
+ * Public read of wildlife logged nearby by anyone (ghost slots + RARE NEARBY
+ * badge). Uses the anon publishable client so the `is_public AND is_animal`
+ * policy applies — only approximate (~1km rounded) coordinates are exposed,
+ * never exact ones.
+ */
+export const listNearbySpecies = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) =>
+    z.object({ lat: z.number(), lng: z.number() }).parse(d),
+  )
+  .handler(async ({ data }): Promise<NearbySpeciesRow[]> => {
+    const supabasePublic = createClient<Database>(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_PUBLISHABLE_KEY!,
+      { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
+    );
+
+    // ~0.5° box ≈ 55km of latitude; good enough for a "nearby" feel.
+    const d = 0.5;
+    const { data: rows, error } = await supabasePublic
+      .from("sightings")
+      .select("common_name, scientific_name, animal_group, approx_lat, approx_lng")
+      .eq("is_public", true)
+      .eq("is_animal", true)
+      .gte("approx_lat", data.lat - d)
+      .lte("approx_lat", data.lat + d)
+      .gte("approx_lng", data.lng - d)
+      .lte("approx_lng", data.lng + d)
+      .limit(500);
+    if (error) throw new Error(error.message);
+
+    const counts = new Map<string, NearbySpeciesRow>();
+    for (const r of rows ?? []) {
+      const key = (r.common_name ?? "").trim().toLowerCase();
+      if (!key) continue;
+      const existing = counts.get(key);
+      if (existing) existing.count += 1;
+      else
+        counts.set(key, {
+          commonName: r.common_name,
+          scientificName: r.scientific_name,
+          group: r.animal_group,
+          count: 1,
+        });
+    }
+    return [...counts.values()].sort((a, b) => b.count - a.count);
+  });
+
 
 export type DbSighting = {
   id: string;

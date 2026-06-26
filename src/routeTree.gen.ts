@@ -18,7 +18,9 @@ import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedUsernameRouteImport } from './routes/_authenticated/username'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedMapRouteImport } from './routes/_authenticated/map'
+import { Route as AuthenticatedLifeListRouteImport } from './routes/_authenticated/life-list'
 import { Route as AuthenticatedJournalRouteImport } from './routes/_authenticated/journal'
+import { Route as AuthenticatedSpeciesSpeciesRouteImport } from './routes/_authenticated/species.$species'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -67,11 +69,22 @@ const AuthenticatedMapRoute = AuthenticatedMapRouteImport.update({
   path: '/map',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedLifeListRoute = AuthenticatedLifeListRouteImport.update({
+  id: '/life-list',
+  path: '/life-list',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedJournalRoute = AuthenticatedJournalRouteImport.update({
   id: '/journal',
   path: '/journal',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSpeciesSpeciesRoute =
+  AuthenticatedSpeciesSpeciesRouteImport.update({
+    id: '/species/$species',
+    path: '/species/$species',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
@@ -96,9 +109,11 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/journal': typeof AuthenticatedJournalRoute
+  '/life-list': typeof AuthenticatedLifeListRoute
   '/map': typeof AuthenticatedMapRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/username': typeof AuthenticatedUsernameRoute
+  '/species/$species': typeof AuthenticatedSpeciesSpeciesRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -109,10 +124,12 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/journal': typeof AuthenticatedJournalRoute
+  '/life-list': typeof AuthenticatedLifeListRoute
   '/map': typeof AuthenticatedMapRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/username': typeof AuthenticatedUsernameRoute
   '/': typeof AuthenticatedIndexRoute
+  '/species/$species': typeof AuthenticatedSpeciesSpeciesRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -125,10 +142,12 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/journal': typeof AuthenticatedJournalRoute
+  '/_authenticated/life-list': typeof AuthenticatedLifeListRoute
   '/_authenticated/map': typeof AuthenticatedMapRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/username': typeof AuthenticatedUsernameRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/species/$species': typeof AuthenticatedSpeciesSpeciesRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -142,9 +161,11 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/sitemap.xml'
     | '/journal'
+    | '/life-list'
     | '/map'
     | '/profile'
     | '/username'
+    | '/species/$species'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -155,10 +176,12 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/sitemap.xml'
     | '/journal'
+    | '/life-list'
     | '/map'
     | '/profile'
     | '/username'
     | '/'
+    | '/species/$species'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -170,10 +193,12 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/sitemap.xml'
     | '/_authenticated/journal'
+    | '/_authenticated/life-list'
     | '/_authenticated/map'
     | '/_authenticated/profile'
     | '/_authenticated/username'
     | '/_authenticated/'
+    | '/_authenticated/species/$species'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -255,11 +280,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMapRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/life-list': {
+      id: '/_authenticated/life-list'
+      path: '/life-list'
+      fullPath: '/life-list'
+      preLoaderRoute: typeof AuthenticatedLifeListRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/journal': {
       id: '/_authenticated/journal'
       path: '/journal'
       fullPath: '/journal'
       preLoaderRoute: typeof AuthenticatedJournalRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/species/$species': {
+      id: '/_authenticated/species/$species'
+      path: '/species/$species'
+      fullPath: '/species/$species'
+      preLoaderRoute: typeof AuthenticatedSpeciesSpeciesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/lovable/email/queue/process': {
@@ -288,18 +327,22 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedJournalRoute: typeof AuthenticatedJournalRoute
+  AuthenticatedLifeListRoute: typeof AuthenticatedLifeListRoute
   AuthenticatedMapRoute: typeof AuthenticatedMapRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedUsernameRoute: typeof AuthenticatedUsernameRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedSpeciesSpeciesRoute: typeof AuthenticatedSpeciesSpeciesRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedJournalRoute: AuthenticatedJournalRoute,
+  AuthenticatedLifeListRoute: AuthenticatedLifeListRoute,
   AuthenticatedMapRoute: AuthenticatedMapRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedUsernameRoute: AuthenticatedUsernameRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedSpeciesSpeciesRoute: AuthenticatedSpeciesSpeciesRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
