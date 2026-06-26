@@ -51,7 +51,7 @@ export const Route = createFileRoute("/_authenticated/")({
   component: LogFlow,
 });
 
-type Phase = "capture" | "scanning" | "result" | "saved";
+type Phase = "dashboard" | "capture" | "scanning" | "result" | "saved";
 type Loc = { lat: number; lng: number } | null;
 
 function LogFlow() {
@@ -64,7 +64,7 @@ function LogFlow() {
   const cameraRef = useRef<HTMLInputElement>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
 
-  const [phase, setPhase] = useState<Phase>("capture");
+  const [phase, setPhase] = useState<Phase>("dashboard");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [thumb, setThumb] = useState<string | null>(null);
   const [result, setResult] = useState<AnimalIdentification | null>(null);
@@ -76,8 +76,12 @@ function LogFlow() {
   const [isPublic, setIsPublic] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  function reset() {
-    setPhase("capture");
+  const sightingsQuery = useQuery({
+    queryKey: ["sightings"],
+    queryFn: () => listMySightings(),
+  });
+
+  function clearTransient() {
     setImageUrl(null);
     setThumb(null);
     setResult(null);
@@ -87,6 +91,19 @@ function LogFlow() {
     if (cameraRef.current) cameraRef.current.value = "";
     if (uploadRef.current) uploadRef.current.value = "";
   }
+
+  // Back to the empty viewfinder (used by "try another photo" / "log another").
+  function reset() {
+    clearTransient();
+    setPhase("capture");
+  }
+
+  // Back to the home dashboard.
+  function goHome() {
+    clearTransient();
+    setPhase("dashboard");
+  }
+
 
   async function handleFile(file: File) {
     setError(null);
