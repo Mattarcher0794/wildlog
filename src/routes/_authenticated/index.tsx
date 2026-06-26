@@ -17,6 +17,24 @@ import {
 } from "@/lib/sightings.functions";
 
 export const Route = createFileRoute("/_authenticated/")({
+  head: () => ({
+    meta: [
+      { title: "Identify Wildlife — Wildlog" },
+      {
+        name: "description",
+        content:
+          "Snap or upload a photo and Wildlog identifies the species in seconds, then saves it to your field journal with a habitat note worth knowing.",
+      },
+      { property: "og:title", content: "Identify Wildlife — Wildlog" },
+      {
+        property: "og:description",
+        content:
+          "Snap or upload a photo and Wildlog identifies the species in seconds, then saves it to your field journal.",
+      },
+      { property: "og:url", content: "https://wildlog.life/" },
+    ],
+    links: [{ rel: "canonical", href: "https://wildlog.life/" }],
+  }),
   component: Home,
 });
 
