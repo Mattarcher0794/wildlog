@@ -9,6 +9,42 @@ import { ANIMAL_GROUPS, type AnimalGroup } from "@/lib/identify.functions";
 import { listMySightings, type DbSighting } from "@/lib/sightings.functions";
 
 export const Route = createFileRoute("/_authenticated/journal")({
+  head: () => ({
+    meta: [
+      { title: "Field Journal — Wildlog" },
+      {
+        name: "description",
+        content:
+          "Browse your Wildlog field journal: every wildlife sighting you've logged, grouped by animal type with species names and habitat notes.",
+      },
+      { property: "og:title", content: "Field Journal — Wildlog" },
+      {
+        property: "og:description",
+        content:
+          "Browse your Wildlog field journal: every wildlife sighting you've logged, grouped by animal type.",
+      },
+      { property: "og:url", content: "https://wildlog.life/journal" },
+    ],
+    links: [{ rel: "canonical", href: "https://wildlog.life/journal" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Field Journal",
+          description:
+            "A personal collection of identified wildlife sightings logged with Wildlog.",
+          url: "https://wildlog.life/journal",
+          isPartOf: {
+            "@type": "WebSite",
+            name: "Wildlog",
+            url: "https://wildlog.life/",
+          },
+        }),
+      },
+    ],
+  }),
   component: JournalPage,
 });
 
@@ -190,7 +226,7 @@ function JournalPage() {
                               whileHover={{ scale: 1.06 }}
                               transition={{ type: "spring", stiffness: 260, damping: 20 }}
                               src={s.image_url}
-                              alt={s.common_name}
+                              alt={`Photo of a ${s.common_name}`}
                               loading="lazy"
                               className={`${i % 2 === 0 ? "blob" : "blob-alt"} h-24 w-24 flex-shrink-0 object-cover`}
                             />

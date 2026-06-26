@@ -15,11 +15,12 @@ export const Route = createFileRoute("/$username")({
     if (!profile) throw notFound();
     return profile;
   },
-  head: ({ loaderData }) => {
+  head: ({ loaderData, params }) => {
     const name = loaderData ? `@${loaderData.username}` : "Wildlog";
     const desc = loaderData
       ? `${loaderData.username}'s Wildlog field journal — ${loaderData.sightingCount} sightings across ${loaderData.speciesCount} species.`
       : "A Wildlog field journal.";
+    const url = `https://wildlog.life/${params.username}`;
     return {
       meta: [
         { title: `${name} · Wildlog` },
@@ -27,8 +28,32 @@ export const Route = createFileRoute("/$username")({
         { property: "og:title", content: `${name} · Wildlog` },
         { property: "og:description", content: desc },
         { property: "og:type", content: "profile" },
+        { property: "og:url", content: url },
         { name: "twitter:card", content: "summary" },
       ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: loaderData
+        ? [
+            {
+              type: "application/ld+json",
+              children: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "ProfilePage",
+                url,
+                mainEntity: {
+                  "@type": "Person",
+                  name: loaderData.username,
+                  url,
+                  interactionStatistic: {
+                    "@type": "InteractionCounter",
+                    interactionType: "https://schema.org/WriteAction",
+                    userInteractionCount: loaderData.sightingCount,
+                  },
+                },
+              }),
+            },
+          ]
+        : [],
     };
   },
   component: PublicProfilePage,
@@ -99,7 +124,7 @@ function PublicProfilePage() {
                 {s.image_url && (
                   <img
                     src={s.image_url}
-                    alt={s.common_name}
+                    alt={`Photo of a ${s.common_name}`}
                     loading="lazy"
                     className={`${i % 2 === 0 ? "blob" : "blob-alt"} aspect-square w-full object-cover`}
                   />

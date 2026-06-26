@@ -1,0 +1,14 @@
+# Wildlog
+
+> Wildlog identifies wildlife from a photo and keeps every sighting in a personal field journal — species name, where it lives, and one thing worth knowing.
+
+Wildlog is a mobile-first app for nature lovers. Snap a photo of an animal and Wildlog names the species, adds a short description and a habitat note, then saves it to your journal. You can keep sightings private or share a public field journal at your own profile page.
+
+## Pages
+
+- [Home](/): Identify an animal from a photo and start a sighting.
+- [Sign in](/auth): Create an account or sign in to Wildlog.
+
+## Optional
+
+- [Public profiles](/): Each member has a shareable field journal at /your-username showing their public sightings.

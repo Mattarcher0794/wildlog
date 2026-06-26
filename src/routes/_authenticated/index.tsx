@@ -17,6 +17,24 @@ import {
 } from "@/lib/sightings.functions";
 
 export const Route = createFileRoute("/_authenticated/")({
+  head: () => ({
+    meta: [
+      { title: "Identify Wildlife — Wildlog" },
+      {
+        name: "description",
+        content:
+          "Snap or upload a photo and Wildlog identifies the species in seconds, then saves it to your field journal with a habitat note worth knowing.",
+      },
+      { property: "og:title", content: "Identify Wildlife — Wildlog" },
+      {
+        property: "og:description",
+        content:
+          "Snap or upload a photo and Wildlog identifies the species in seconds, then saves it to your field journal.",
+      },
+      { property: "og:url", content: "https://wildlog.life/" },
+    ],
+    links: [{ rel: "canonical", href: "https://wildlog.life/" }],
+  }),
   component: Home,
 });
 
@@ -95,6 +113,8 @@ function Home() {
   return (
     <main className="min-h-screen pb-[calc(7.5rem+env(safe-area-inset-bottom))]">
       <section className="mx-auto max-w-3xl px-5 pt-8">
+        <h1 className="sr-only">Identify wildlife and log your sightings</h1>
+
 
         <AnimatePresence mode="wait">
           {phase === "idle" ? (
@@ -130,7 +150,7 @@ function Home() {
                   <div className="relative">
                     <img
                       src={imageUrl}
-                      alt="Animal to identify"
+                      alt="Photo of the animal you're identifying"
                       className="aspect-square w-full object-cover"
                     />
                     {phase === "loading" && (
@@ -235,14 +255,15 @@ function Home() {
 function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => void }) {
   return (
     <div className="text-center">
-      <motion.h1
+      <motion.p
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.45 }}
         className="font-display text-5xl leading-[1.05] text-foreground sm:text-6xl"
+        aria-hidden="true"
       >
         What did you <span className="text-primary">spot?</span>
-      </motion.h1>
+      </motion.p>
       <motion.p
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -327,7 +348,7 @@ function RecentStrip({ sightings }: { sightings: DbSighting[] }) {
               {s.image_url && (
                 <img
                   src={s.image_url}
-                  alt={s.common_name}
+                  alt={`Photo of a ${s.common_name}`}
                   loading="lazy"
                   className={`${i % 2 === 0 ? "blob" : "blob-alt"} aspect-square w-full object-cover`}
                 />
@@ -435,9 +456,9 @@ function ResultCard({
         </span>
       </motion.div>
       <motion.div variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}>
-        <h3 className="font-display text-3xl leading-tight text-foreground">
+        <h2 className="font-display text-3xl leading-tight text-foreground">
           {result.commonName}
-        </h3>
+        </h2>
         {result.scientificName && (
           <p className="text-sm italic text-muted-foreground">
             {result.scientificName}

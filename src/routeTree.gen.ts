@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as UsernameRouteImport } from './routes/$username'
@@ -22,6 +23,11 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/$username': typeof UsernameRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/map': typeof AuthenticatedMapRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -100,6 +107,7 @@ export interface FileRoutesByTo {
   '/$username': typeof UsernameRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/map': typeof AuthenticatedMapRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/$username': typeof UsernameRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/journal': typeof AuthenticatedJournalRoute
   '/_authenticated/map': typeof AuthenticatedMapRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
     | '/$username'
     | '/auth'
     | '/onboarding'
+    | '/sitemap.xml'
     | '/journal'
     | '/map'
     | '/profile'
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/$username'
     | '/auth'
     | '/onboarding'
+    | '/sitemap.xml'
     | '/journal'
     | '/map'
     | '/profile'
@@ -157,6 +168,7 @@ export interface FileRouteTypes {
     | '/$username'
     | '/auth'
     | '/onboarding'
+    | '/sitemap.xml'
     | '/_authenticated/journal'
     | '/_authenticated/map'
     | '/_authenticated/profile'
@@ -172,6 +184,7 @@ export interface RootRouteChildren {
   UsernameRoute: typeof UsernameRoute
   AuthRoute: typeof AuthRoute
   OnboardingRoute: typeof OnboardingRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -179,6 +192,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
@@ -290,6 +310,7 @@ const rootRouteChildren: RootRouteChildren = {
   UsernameRoute: UsernameRoute,
   AuthRoute: AuthRoute,
   OnboardingRoute: OnboardingRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
