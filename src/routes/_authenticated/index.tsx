@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
-  ArrowLeft,
+  Camera,
   Clock,
   Globe,
   Lock,
@@ -12,7 +12,6 @@ import {
   Plus,
   RotateCcw,
   Upload,
-  Zap,
 } from "lucide-react";
 
 import heroAnimals from "@/assets/hero-animals.jpg";
