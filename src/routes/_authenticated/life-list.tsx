@@ -19,6 +19,9 @@ import {
 import { speciesGradient } from "@/lib/species-color";
 
 export const Route = createFileRoute("/_authenticated/life-list")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    species: typeof search.species === "string" ? search.species : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Life List — Wildlog" },
