@@ -214,7 +214,15 @@ function LifeListPage() {
 
 }
 
-function SpeciesCard({ entry, index }: { entry: SpeciesEntry; index: number }) {
+function SpeciesCard({
+  entry,
+  index,
+  onSelect,
+}: {
+  entry: SpeciesEntry;
+  index: number;
+  onSelect: () => void;
+}) {
   const radius = ORGANIC[index % ORGANIC.length];
   const label = badgeLabel(entry.badge);
   return (
@@ -225,11 +233,12 @@ function SpeciesCard({ entry, index }: { entry: SpeciesEntry; index: number }) {
       exit={{ opacity: 0, y: -8 }}
       transition={{ delay: Math.min(index, 8) * 0.04, duration: 0.3 }}
     >
-      <Link
-        to="/species/$species"
-        params={{ species: entry.key }}
-        className="card-journal relative block bg-card p-2.5"
+      <button
+        type="button"
+        onClick={onSelect}
+        className="card-journal relative block w-full bg-card p-2.5 text-left"
       >
+
         <div className={`relative ${radius} aspect-square w-full overflow-hidden`}>
           {entry.latest.image_url ? (
             <img
