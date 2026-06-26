@@ -150,7 +150,7 @@ function Home() {
                   <div className="relative">
                     <img
                       src={imageUrl}
-                      alt="Animal to identify"
+                      alt="Photo of the animal you're identifying"
                       className="aspect-square w-full object-cover"
                     />
                     {phase === "loading" && (
