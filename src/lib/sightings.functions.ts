@@ -75,11 +75,12 @@ export type DbSighting = {
   is_public: boolean;
   lat: number | null;
   lng: number | null;
+  place_name: string | null;
   created_at: string;
 };
 
 const SELECT =
-  "id, image_url, common_name, scientific_name, animal_group, confidence, description, note, is_animal, is_public, lat, lng, created_at";
+  "id, image_url, common_name, scientific_name, animal_group, confidence, description, note, is_animal, is_public, lat, lng, place_name, created_at";
 
 export const listMySightings = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
