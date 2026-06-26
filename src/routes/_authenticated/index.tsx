@@ -113,6 +113,8 @@ function Home() {
   return (
     <main className="min-h-screen pb-[calc(7.5rem+env(safe-area-inset-bottom))]">
       <section className="mx-auto max-w-3xl px-5 pt-8">
+        <h1 className="sr-only">Identify wildlife and log your sightings</h1>
+
 
         <AnimatePresence mode="wait">
           {phase === "idle" ? (
