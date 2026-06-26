@@ -480,6 +480,13 @@ function ResultStep({
         </p>
       )}
 
+      {/* Photo-specific observation */}
+      {result.note && (
+        <p className="mt-4 rounded-[18px] bg-peach-light px-4 py-3 text-[13px] leading-relaxed text-plum">
+          {result.note}
+        </p>
+      )}
+
       {/* Location + date */}
       <div className="mt-5 rounded-2xl bg-card">
         <div className="flex items-center gap-3 border-b border-border px-3.5 py-3">
