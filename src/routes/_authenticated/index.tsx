@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowLeft,
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/_authenticated/")({
       {
         name: "description",
         content:
-          "Snap or upload a photo and Wildlog identifies the species in seconds, then saves it to your life list with a note worth keeping.",
+          "Snap or upload a photo and Wildlog identifies the species in seconds, then saves it to your life list.",
       },
       { property: "og:title", content: "Log a Sighting — Wildlog" },
       {
@@ -45,7 +45,7 @@ export const Route = createFileRoute("/_authenticated/")({
   component: LogFlow,
 });
 
-type Phase = "capture" | "scanning" | "result" | "memory" | "saved";
+type Phase = "capture" | "scanning" | "result" | "saved";
 type Loc = { lat: number; lng: number } | null;
 
 function LogFlow() {
@@ -65,9 +65,8 @@ function LogFlow() {
   const [location, setLocation] = useState<Loc>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Memory form state.
+  // Form state for the single result page.
   const [speciesName, setSpeciesName] = useState("");
-  const [note, setNote] = useState("");
   const [isPublic, setIsPublic] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -78,7 +77,6 @@ function LogFlow() {
     setResult(null);
     setError(null);
     setSpeciesName("");
-    setNote("");
     setIsPublic(false);
     if (cameraRef.current) cameraRef.current.value = "";
     if (uploadRef.current) uploadRef.current.value = "";
@@ -108,21 +106,6 @@ function LogFlow() {
     }
   }
 
-  // "No photo" — skip straight to a manual memory entry.
-  function skipPhoto() {
-    setResult(null);
-    setImageUrl(null);
-    setThumb(null);
-    setSpeciesName("");
-    getCurrentLocation().then(setLocation);
-    setPhase("memory");
-  }
-
-  function confirmMatch() {
-    getCurrentLocation().then((l) => setLocation((p) => p ?? l));
-    setPhase("memory");
-  }
-
   async function save() {
     const name = speciesName.trim();
     if (!name) {
@@ -140,7 +123,7 @@ function LogFlow() {
           animal_group: result?.group || null,
           confidence: result?.confidence || null,
           description: result?.description || null,
-          note: note.trim() || null,
+          note: null,
           is_animal: result ? result.isAnimal : true,
           is_public: isPublic,
           lat: location?.lat ?? null,
@@ -167,7 +150,6 @@ function LogFlow() {
               key="capture"
               onCamera={() => cameraRef.current?.click()}
               onUpload={() => uploadRef.current?.click()}
-              onSkip={skipPhoto}
             />
           )}
 
@@ -178,46 +160,22 @@ function LogFlow() {
           {phase === "result" &&
             (error ? (
               <ErrorStep key="error" message={error} onRetry={reset} />
-            ) : result && !result.isAnimal ? (
-              <NotAnimalStep
-                key="not-animal"
-                description={result.description}
+            ) : result ? (
+              <ResultStep
+                key="result"
+                result={result}
+                imageUrl={imageUrl}
+                speciesName={speciesName}
+                onSpeciesName={setSpeciesName}
+                isPublic={isPublic}
+                onPublic={setIsPublic}
+                location={location}
+                saving={saving}
+                error={error}
                 onRetry={reset}
-                onLogAnyway={() => {
-                  setSpeciesName("");
-                  setPhase("memory");
-                }}
+                onSave={save}
               />
-            ) : (
-              result && (
-                <ResultStep
-                  key="result"
-                  result={result}
-                  imageUrl={imageUrl}
-                  onConfirm={confirmMatch}
-                  onRetry={reset}
-                />
-              )
-            ))}
-
-          {phase === "memory" && (
-            <MemoryStep
-              key="memory"
-              result={result}
-              imageUrl={imageUrl}
-              speciesName={speciesName}
-              onSpeciesName={setSpeciesName}
-              note={note}
-              onNote={setNote}
-              isPublic={isPublic}
-              onPublic={setIsPublic}
-              location={location}
-              saving={saving}
-              error={error}
-              onBack={() => setPhase(result ? "result" : "capture")}
-              onSave={save}
-            />
-          )}
+            ) : null)}
 
           {phase === "saved" && (
             <SavedStep
@@ -262,11 +220,9 @@ function LogFlow() {
 function CaptureStep({
   onCamera,
   onUpload,
-  onSkip,
 }: {
   onCamera: () => void;
   onUpload: () => void;
-  onSkip: () => void;
 }) {
   return (
     <motion.div
@@ -336,14 +292,8 @@ function CaptureStep({
           <span className="h-[60px] w-[60px] rounded-full border-[3px] border-primary-foreground" />
         </motion.button>
 
-        <button
-          type="button"
-          onClick={onSkip}
-          className="flex w-[52px] flex-col items-center text-center"
-        >
-          <span className="text-[13px] font-medium text-muted-foreground">Skip</span>
-          <span className="text-[10px] text-muted-foreground/70">No photo</span>
-        </button>
+        {/* Spacer to keep the shutter centred */}
+        <span className="h-[52px] w-[52px]" aria-hidden />
       </div>
 
       <p className="mt-6 text-center text-sm italic text-foreground/40">
@@ -421,22 +371,38 @@ function ScanningStep({
   );
 }
 
-/* ─────────────────────────── Step 3 · Result ──────────────────────────── */
+/* ───────────────────── Step 3 · Result (single page) ──────────────────── */
 
 function ResultStep({
   result,
   imageUrl,
-  onConfirm,
+  speciesName,
+  onSpeciesName,
+  isPublic,
+  onPublic,
+  location,
+  saving,
+  error,
   onRetry,
+  onSave,
 }: {
   result: AnimalIdentification;
   imageUrl: string | null;
-  onConfirm: () => void;
+  speciesName: string;
+  onSpeciesName: (v: string) => void;
+  isPublic: boolean;
+  onPublic: (v: boolean) => void;
+  location: Loc;
+  saving: boolean;
+  error: string | null;
   onRetry: () => void;
+  onSave: () => void;
 }) {
+  const isAnimal = result.isAnimal;
   const fill =
     result.confidence === "high" ? 88 : result.confidence === "medium" ? 60 : 28;
   const high = result.confidence === "high";
+  const now = new Date();
 
   return (
     <motion.div
@@ -456,220 +422,67 @@ function ResultStep({
         </div>
       )}
 
-      <h2 className="mt-4 font-display text-2xl">What did you see?</h2>
-
-      <button
-        type="button"
-        onClick={onConfirm}
-        className="card-journal organic-1 mt-4 flex w-full items-center gap-3.5 bg-card p-3.5 text-left"
-      >
-        <span
-          className="blob h-[50px] w-[50px] shrink-0"
-          style={{ background: speciesGradient(result.group, result.commonName) }}
-        />
-        <span className="min-w-0 flex-1">
-          <span className="block font-display text-sm">{result.commonName}</span>
-          {result.scientificName && (
-            <span className="block truncate text-[10px] italic text-muted-foreground">
-              {result.scientificName}
-            </span>
-          )}
-          <span className="mt-2 flex items-center gap-2">
-            <span className="h-1 flex-1 overflow-hidden rounded-full bg-foreground/[0.08]">
-              <span
-                className="block h-full rounded-full"
-                style={{
-                  width: `${fill}%`,
-                  background: high ? "var(--moss)" : "rgba(110,97,119,0.45)",
-                }}
-              />
-            </span>
-            <span
-              className="text-[8px] font-bold uppercase tracking-wide"
-              style={{ color: high ? "var(--moss)" : "var(--muted-foreground)" }}
-            >
-              {result.confidence}
-            </span>
-          </span>
-        </span>
-        <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
-          <Check className="h-4 w-4" />
-        </span>
-      </button>
-
-      {result.note && (
-        <p className="mt-3 rounded-2xl bg-secondary px-3 py-2 text-xs text-secondary-foreground">
-          {result.note}
-        </p>
-      )}
-
-      <button
-        type="button"
-        onClick={onRetry}
-        className="mx-auto mt-5 block text-[11px] font-medium text-foreground/40 underline underline-offset-[3px]"
-      >
-        Not this? Try another photo
-      </button>
-    </motion.div>
-  );
-}
-
-function NotAnimalStep({
-  description,
-  onRetry,
-  onLogAnyway,
-}: {
-  description: string;
-  onRetry: () => void;
-  onLogAnyway: () => void;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -12 }}
-      transition={{ duration: 0.35 }}
-      className="pt-6"
-    >
-      <div className="card-journal organic-2 bg-card px-5 py-7 text-center">
-        <span
-          className="mx-auto block h-[70px] w-[70px] blob"
-          style={{
-            background: "radial-gradient(ellipse at 42% 40%, #E8B898, #C88860)",
-          }}
-          aria-hidden
-        />
-        <h2 className="mt-5 font-display text-xl">No creature spotted</h2>
-        <p className="mx-auto mt-2 max-w-[240px] text-[13px] leading-relaxed text-muted-foreground">
-          {description ||
-            "We couldn't find an animal here. Maybe it was a plant, a track, or just a feeling."}
-        </p>
-      </div>
-
-      <div className="mt-4 space-y-3">
-        <button
-          type="button"
-          onClick={onRetry}
-          className="flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-primary font-display text-sm uppercase tracking-wide text-primary-foreground"
-        >
-          <Camera className="h-4 w-4" /> Try another photo
-        </button>
-        <button
-          type="button"
-          onClick={onLogAnyway}
-          className="flex h-[52px] w-full items-center justify-center gap-2 rounded-full border-[1.5px] border-input bg-card text-sm font-medium text-foreground"
-        >
-          Log the memory anyway <ArrowRight className="h-4 w-4" />
-        </button>
-      </div>
-      <p className="mt-5 text-center text-sm italic text-foreground/40">
-        Every moment in nature is worth keeping.
-      </p>
-    </motion.div>
-  );
-}
-
-function ErrorStep({ message, onRetry }: { message: string; onRetry: () => void }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      className="pt-10 text-center"
-    >
-      <p className="text-sm text-destructive">{message}</p>
-      <button
-        type="button"
-        onClick={onRetry}
-        className="mx-auto mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
-      >
-        <RotateCcw className="h-4 w-4" /> Try again
-      </button>
-    </motion.div>
-  );
-}
-
-/* ─────────────────────────── Step 4 · The Memory ──────────────────────── */
-
-function MemoryStep({
-  result,
-  imageUrl,
-  speciesName,
-  onSpeciesName,
-  note,
-  onNote,
-  isPublic,
-  onPublic,
-  location,
-  saving,
-  error,
-  onBack,
-  onSave,
-}: {
-  result: AnimalIdentification | null;
-  imageUrl: string | null;
-  speciesName: string;
-  onSpeciesName: (v: string) => void;
-  note: string;
-  onNote: (v: string) => void;
-  isPublic: boolean;
-  onPublic: (v: boolean) => void;
-  location: Loc;
-  saving: boolean;
-  error: string | null;
-  onBack: () => void;
-  onSave: () => void;
-}) {
-  const confirmed = !!result?.isAnimal;
-  const now = new Date();
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -12 }}
-      transition={{ duration: 0.35 }}
-    >
-      <div className="flex items-center gap-3 pb-1">
-        <button
-          type="button"
-          onClick={onBack}
-          aria-label="Back"
-          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card"
-        >
-          <ArrowLeft className="h-4 w-4 text-foreground" />
-        </button>
-        <h2 className="font-display text-2xl">The memory</h2>
-      </div>
-
-      {imageUrl && (
-        <img
-          src={imageUrl}
-          alt={speciesName || "Your sighting"}
-          className="thumb-1 mt-3 h-40 w-full object-cover"
-        />
-      )}
-
-      {/* Species */}
-      <div className="mt-4">
-        {confirmed ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-primary/20 bg-primary/10 py-1.5 pl-2 pr-3">
-            <span className="h-2 w-2 rounded-full bg-primary" />
-            <span className="font-display text-[11px]">{speciesName}</span>
-            <Check className="h-3 w-3 text-primary" />
-          </span>
-        ) : (
+      {/* Species name */}
+      {isAnimal ? (
+        <div className="mt-4 flex items-center gap-3">
+          <span
+            className="blob h-12 w-12 shrink-0"
+            style={{ background: speciesGradient(result.group, result.commonName) }}
+            aria-hidden
+          />
+          <div className="min-w-0">
+            <h2 className="font-display text-2xl leading-tight">{result.commonName}</h2>
+            {result.scientificName && (
+              <p className="truncate text-xs italic text-muted-foreground">
+                {result.scientificName}
+              </p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="mt-4">
+          <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+            No animal spotted — name it yourself
+          </p>
           <input
             value={speciesName}
             onChange={(e) => onSpeciesName(e.target.value)}
             placeholder="What was it? (name it)"
             className="w-full rounded-2xl border-[1.5px] border-input bg-card px-3.5 py-3 text-sm outline-none focus:border-ring"
           />
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Confidence bar */}
+      {isAnimal && (
+        <div className="mt-4 flex items-center gap-2.5">
+          <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-foreground/[0.08]">
+            <span
+              className="block h-full rounded-full"
+              style={{
+                width: `${fill}%`,
+                background: high ? "var(--moss)" : "rgba(110,97,119,0.45)",
+              }}
+            />
+          </span>
+          <span
+            className="text-[9px] font-bold uppercase tracking-wide"
+            style={{ color: high ? "var(--moss)" : "var(--muted-foreground)" }}
+          >
+            {result.confidence} confidence
+          </span>
+        </div>
+      )}
+
+      {/* Large description */}
+      {result.description && (
+        <p className="mt-4 text-[15px] leading-relaxed text-foreground/80">
+          {result.description}
+        </p>
+      )}
 
       {/* Location + date */}
-      <div className="mt-4 rounded-2xl bg-card">
+      <div className="mt-5 rounded-2xl bg-card">
         <div className="flex items-center gap-3 border-b border-border px-3.5 py-3">
           <MapPin className="h-5 w-5 shrink-0 text-primary" />
           <div className="min-w-0">
@@ -703,19 +516,6 @@ function MemoryStep({
         </div>
       </div>
 
-      {/* Note */}
-      <div className="relative mt-4">
-        <textarea
-          value={note}
-          onChange={(e) => onNote(e.target.value)}
-          placeholder="What made this one memorable?"
-          className="min-h-[88px] w-full resize-none rounded-2xl border-[1.5px] border-input bg-card px-3.5 py-3.5 text-sm italic text-foreground outline-none placeholder:text-foreground/30 focus:border-ring"
-        />
-        {note.length === 0 && (
-          <span className="animate-cursor-blink pointer-events-none absolute left-[88px] top-[18px] h-[18px] w-0.5 bg-primary" />
-        )}
-      </div>
-
       {/* Visibility */}
       <div className="mt-4 flex rounded-full bg-muted p-1">
         <button
@@ -747,6 +547,34 @@ function MemoryStep({
         className="mt-5 flex h-[54px] w-full items-center justify-center gap-2 rounded-full bg-primary font-display text-[15px] uppercase tracking-wide text-primary-foreground disabled:opacity-60"
       >
         {saving ? "Saving…" : "Save to Life List ✦"}
+      </button>
+
+      <button
+        type="button"
+        onClick={onRetry}
+        className="mx-auto mt-4 flex items-center gap-1.5 text-[12px] font-medium text-foreground/40 underline underline-offset-[3px]"
+      >
+        <RotateCcw className="h-3.5 w-3.5" /> Not this? Try another photo
+      </button>
+    </motion.div>
+  );
+}
+
+function ErrorStep({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      className="pt-10 text-center"
+    >
+      <p className="text-sm text-destructive">{message}</p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="mx-auto mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
+      >
+        <RotateCcw className="h-4 w-4" /> Try again
       </button>
     </motion.div>
   );
