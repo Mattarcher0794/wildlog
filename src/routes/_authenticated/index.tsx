@@ -122,7 +122,7 @@ function LogFlow() {
           animal_group: result?.group || null,
           confidence: result?.confidence || null,
           description: result?.description || null,
-          note: null,
+          note: result?.note || null,
           is_animal: result ? result.isAnimal : true,
           is_public: isPublic,
           lat: location?.lat ?? null,
