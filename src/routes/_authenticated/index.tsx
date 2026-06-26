@@ -1,234 +1,239 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Camera, RotateCcw, Upload, X, Lock, Globe } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Camera,
+  Check,
+  Clock,
+  Globe,
+  Lock,
+  MapPin,
+  RotateCcw,
+  Upload,
+  Zap,
+} from "lucide-react";
 
-import heroAnimals from "@/assets/hero-animals.jpg";
 import { useRequireUsername } from "@/hooks/use-profile";
 import { identifyAnimal, type AnimalIdentification } from "@/lib/identify.functions";
 import { fileToDataUrl, getCurrentLocation, makeThumbnail } from "@/lib/sightings";
-import {
-  createSighting,
-  listMySightings,
-  setSightingVisibility,
-  type DbSighting,
-} from "@/lib/sightings.functions";
+import { createSighting } from "@/lib/sightings.functions";
+import { speciesGradient } from "@/lib/species-color";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
-      { title: "Identify Wildlife — Wildlog" },
+      { title: "Log a Sighting — Wildlog" },
       {
         name: "description",
         content:
-          "Snap or upload a photo and Wildlog identifies the species in seconds, then saves it to your field journal with a habitat note worth knowing.",
+          "Snap or upload a photo and Wildlog identifies the species in seconds, then saves it to your life list with a note worth keeping.",
       },
-      { property: "og:title", content: "Identify Wildlife — Wildlog" },
+      { property: "og:title", content: "Log a Sighting — Wildlog" },
       {
         property: "og:description",
         content:
-          "Snap or upload a photo and Wildlog identifies the species in seconds, then saves it to your field journal.",
+          "Snap or upload a photo and Wildlog identifies the species in seconds, then saves it to your life list.",
       },
       { property: "og:url", content: "https://wildlog.life/" },
     ],
     links: [{ rel: "canonical", href: "https://wildlog.life/" }],
   }),
-  component: Home,
+  component: LogFlow,
 });
 
-type Phase = "idle" | "loading" | "result" | "error";
+type Phase = "capture" | "scanning" | "result" | "memory" | "saved";
+type Loc = { lat: number; lng: number } | null;
 
-function Home() {
+function LogFlow() {
   useRequireUsername();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const identify = useServerFn(identifyAnimal);
   const create = useServerFn(createSighting);
-  const fileRef = useRef<HTMLInputElement>(null);
+
+  const cameraRef = useRef<HTMLInputElement>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
 
-  const [phase, setPhase] = useState<Phase>("idle");
+  const [phase, setPhase] = useState<Phase>("capture");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [thumb, setThumb] = useState<string | null>(null);
   const [result, setResult] = useState<AnimalIdentification | null>(null);
-  const [saved, setSaved] = useState<DbSighting | null>(null);
+  const [location, setLocation] = useState<Loc>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const sightingsQuery = useQuery({
-    queryKey: ["sightings"],
-    queryFn: () => listMySightings(),
-  });
-  const sightings = sightingsQuery.data ?? [];
+  // Memory form state.
+  const [speciesName, setSpeciesName] = useState("");
+  const [note, setNote] = useState("");
+  const [isPublic, setIsPublic] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  function reset() {
+    setPhase("capture");
+    setImageUrl(null);
+    setThumb(null);
+    setResult(null);
+    setError(null);
+    setSpeciesName("");
+    setNote("");
+    setIsPublic(false);
+    if (cameraRef.current) cameraRef.current.value = "";
+    if (uploadRef.current) uploadRef.current.value = "";
+  }
 
   async function handleFile(file: File) {
     setError(null);
     setResult(null);
-    setSaved(null);
     try {
       const dataUrl = await fileToDataUrl(file);
       setImageUrl(dataUrl);
-      setPhase("loading");
+      setPhase("scanning");
       const locationPromise = getCurrentLocation();
-      const out = await identify({ data: { imageDataUrl: dataUrl } });
-      setResult(out);
-      setPhase("result");
-
-      const [thumb, location] = await Promise.all([
-        makeThumbnail(dataUrl, 480).catch(() => null),
+      const [out, t, loc] = await Promise.all([
+        identify({ data: { imageDataUrl: dataUrl } }),
+        makeThumbnail(dataUrl, 640).catch(() => null),
         locationPromise,
       ]);
-      const row = await create({
+      setThumb(t);
+      setLocation(loc);
+      setResult(out);
+      setSpeciesName(out.isAnimal ? out.commonName : "");
+      setPhase("result");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong.");
+      setPhase("result");
+    }
+  }
+
+  // "No photo" — skip straight to a manual memory entry.
+  function skipPhoto() {
+    setResult(null);
+    setImageUrl(null);
+    setThumb(null);
+    setSpeciesName("");
+    getCurrentLocation().then(setLocation);
+    setPhase("memory");
+  }
+
+  function confirmMatch() {
+    getCurrentLocation().then((l) => setLocation((p) => p ?? l));
+    setPhase("memory");
+  }
+
+  async function save() {
+    const name = speciesName.trim();
+    if (!name) {
+      setError("Give this sighting a name first.");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      await create({
         data: {
           image_url: thumb,
-          common_name: out.commonName,
-          scientific_name: out.scientificName || null,
-          animal_group: out.group || null,
-          confidence: out.confidence || null,
-          description: out.description || null,
-          note: out.note || null,
-          is_animal: out.isAnimal,
-          is_public: false,
+          common_name: name,
+          scientific_name: result?.scientificName || null,
+          animal_group: result?.group || null,
+          confidence: result?.confidence || null,
+          description: result?.description || null,
+          note: note.trim() || null,
+          is_animal: result ? result.isAnimal : true,
+          is_public: isPublic,
           lat: location?.lat ?? null,
           lng: location?.lng ?? null,
         },
       });
-      setSaved(row);
       queryClient.invalidateQueries({ queryKey: ["sightings"] });
+      setPhase("saved");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong.");
-      setPhase("error");
+      setError(e instanceof Error ? e.message : "Could not save. Try again.");
+    } finally {
+      setSaving(false);
     }
-  }
-
-  function reset() {
-    setPhase("idle");
-    setImageUrl(null);
-    setResult(null);
-    setSaved(null);
-    setError(null);
-    if (fileRef.current) fileRef.current.value = "";
-    if (uploadRef.current) uploadRef.current.value = "";
   }
 
   return (
     <main className="min-h-screen pb-[calc(7.5rem+env(safe-area-inset-bottom))]">
-      <section className="mx-auto max-w-3xl px-5 pt-8">
-        <h1 className="sr-only">Identify wildlife and log your sightings</h1>
-
+      <section className="mx-auto max-w-md px-5 pt-6">
+        <h1 className="sr-only">Log a wildlife sighting</h1>
 
         <AnimatePresence mode="wait">
-          {phase === "idle" ? (
-            <motion.div
-              key="hero"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.35 }}
-            >
-              <Hero
-                onCamera={() => fileRef.current?.click()}
-                onUpload={() => uploadRef.current?.click()}
-              />
-              {sightings.length > 0 && (
-                <RecentStrip sightings={sightings.slice(0, 6)} />
-              )}
-            </motion.div>
-          ) : (
-            <motion.div
+          {phase === "capture" && (
+            <CaptureStep
               key="capture"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.35 }}
-              className="mx-auto max-w-md"
-            >
-              <motion.div
-                layout
-                className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm"
-              >
-                {imageUrl && (
-                  <div className="relative">
-                    <img
-                      src={imageUrl}
-                      alt="Photo of the animal you're identifying"
-                      className="aspect-square w-full object-cover"
-                    />
-                    {phase === "loading" && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="absolute inset-0 flex items-end bg-gradient-to-t from-black/40 to-transparent p-4"
-                      >
-                        <ScanLine />
-                      </motion.div>
-                    )}
-                  </div>
-                )}
-                <div className="p-5">
-                  <AnimatePresence mode="wait">
-                    {phase === "loading" && (
-                      <motion.div
-                        key="load"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="flex items-center gap-3 text-muted-foreground"
-                      >
-                        <span className="blob-spin h-5 w-5 bg-primary" aria-hidden />
-                        <span className="text-sm">Checking the field guide…</span>
-                      </motion.div>
-                    )}
-                    {phase === "result" && result && (
-                      <ResultCard
-                        key="res"
-                        result={result}
-                        saved={saved}
-                        onVisibilityChange={(s) => setSaved(s)}
-                      />
-                    )}
-                    {phase === "error" && (
-                      <motion.div
-                        key="err"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="space-y-3"
-                      >
-                        <p className="text-sm text-destructive">{error}</p>
-                        <button
-                          onClick={reset}
-                          className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                        >
-                          <RotateCcw className="h-4 w-4" /> Try again
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </motion.div>
+              onCamera={() => cameraRef.current?.click()}
+              onUpload={() => uploadRef.current?.click()}
+              onSkip={skipPhoto}
+            />
+          )}
 
-              {(phase === "result" || phase === "error") && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="mt-4 flex justify-center"
-                >
-                  <motion.button
-                    whileTap={{ scale: 0.96 }}
-                    onClick={reset}
-                    className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground hover:bg-secondary"
-                  >
-                    <Camera className="h-4 w-4" /> Log another
-                  </motion.button>
-                </motion.div>
-              )}
-            </motion.div>
+          {phase === "scanning" && (
+            <ScanningStep key="scanning" imageUrl={imageUrl} group={result?.group} />
+          )}
+
+          {phase === "result" &&
+            (error ? (
+              <ErrorStep key="error" message={error} onRetry={reset} />
+            ) : result && !result.isAnimal ? (
+              <NotAnimalStep
+                key="not-animal"
+                description={result.description}
+                onRetry={reset}
+                onLogAnyway={() => {
+                  setSpeciesName("");
+                  setPhase("memory");
+                }}
+              />
+            ) : (
+              result && (
+                <ResultStep
+                  key="result"
+                  result={result}
+                  imageUrl={imageUrl}
+                  onConfirm={confirmMatch}
+                  onRetry={reset}
+                />
+              )
+            ))}
+
+          {phase === "memory" && (
+            <MemoryStep
+              key="memory"
+              result={result}
+              imageUrl={imageUrl}
+              speciesName={speciesName}
+              onSpeciesName={setSpeciesName}
+              note={note}
+              onNote={setNote}
+              isPublic={isPublic}
+              onPublic={setIsPublic}
+              location={location}
+              saving={saving}
+              error={error}
+              onBack={() => setPhase(result ? "result" : "capture")}
+              onSave={save}
+            />
+          )}
+
+          {phase === "saved" && (
+            <SavedStep
+              key="saved"
+              name={speciesName}
+              group={result?.group}
+              imageUrl={thumb}
+              onAnother={reset}
+              onView={() => navigate({ to: "/life-list" })}
+            />
           )}
         </AnimatePresence>
       </section>
 
       <input
-        ref={fileRef}
+        ref={cameraRef}
         type="file"
         accept="image/*"
         capture="environment"
@@ -252,287 +257,557 @@ function Home() {
   );
 }
 
-function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => void }) {
-  return (
-    <div className="text-center">
-      <motion.p
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, duration: 0.45 }}
-        className="font-display text-5xl leading-[1.05] text-foreground sm:text-6xl"
-        aria-hidden="true"
-      >
-        What did you <span className="text-primary">spot?</span>
-      </motion.p>
-      <motion.p
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.18, duration: 0.45 }}
-        className="mx-auto mt-3 max-w-md text-balance font-medium text-muted-foreground"
-      >
-        Snap a photo and Wildlog names the species, where it lives, and one thing
-        worth knowing — then keeps it in your journal.
-      </motion.p>
+/* ─────────────────────────── Step 1 · Capture ─────────────────────────── */
 
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.26, duration: 0.4 }}
-        className="mx-auto mt-7 flex w-full max-w-sm flex-col gap-[10px]"
-      >
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          onClick={onCamera}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-full text-[15px] font-semibold text-white shadow-[0_5px_14px_-9px_rgba(0,0,0,0.4)]"
-          style={{ backgroundColor: "#4a6b3a" }}
-        >
-          <Camera className="h-[18px] w-[18px]" strokeWidth={2.1} /> Start a sighting
-        </motion.button>
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          onClick={onUpload}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-full border bg-white text-[15px] font-medium"
-          style={{ color: "#4a6b3a", borderColor: "rgba(74,107,58,0.15)" }}
-        >
-          <Upload className="h-[18px] w-[18px]" strokeWidth={2.1} /> Upload a previous photo
-        </motion.button>
-      </motion.div>
-
-      <motion.div
-        initial={{ scale: 0.92, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut", delay: 0.34 }}
-        className="mx-auto mt-7 max-w-[13rem]"
-      >
-        <img
-          src={heroAnimals}
-          alt="Hand-painted field-journal illustration of a fox, owl, deer and frog in peach, plum and moss"
-          width={1024}
-          height={1024}
-          className="blob h-auto w-full"
-        />
-      </motion.div>
-    </div>
-  );
-}
-
-
-function RecentStrip({ sightings }: { sightings: DbSighting[] }) {
+function CaptureStep({
+  onCamera,
+  onUpload,
+  onSkip,
+}: {
+  onCamera: () => void;
+  onUpload: () => void;
+  onSkip: () => void;
+}) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5, duration: 0.45 }}
-      className="mt-14"
+      exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.35 }}
     >
-      <div className="mb-4 flex items-end justify-between">
-        <h2 className="font-display text-2xl">Recent sightings</h2>
-        <Link to="/journal" className="text-sm font-semibold text-primary hover:underline">
-          View all →
-        </Link>
-      </div>
-      <motion.ul
-        className="grid grid-cols-2 gap-4 sm:grid-cols-3"
-        initial="hidden"
-        animate="show"
-        variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06 } } }}
+      {/* Viewfinder */}
+      <button
+        type="button"
+        onClick={onCamera}
+        aria-label="Open camera"
+        className="relative block aspect-[4/5] w-full overflow-hidden rounded-[26px]"
+        style={{ backgroundColor: "#110C1E" }}
       >
-        {sightings.map((s, i) => (
-          <motion.li
-            key={s.id}
-            variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
-            whileHover={{ y: -3 }}
-            className="card-journal bg-card p-3"
-          >
-            <div className="relative mx-auto w-fit">
-              {s.image_url && (
-                <img
-                  src={s.image_url}
-                  alt={`Photo of a ${s.common_name}`}
-                  loading="lazy"
-                  className={`${i % 2 === 0 ? "blob" : "blob-alt"} aspect-square w-full object-cover`}
-                />
-              )}
-              {i === 0 && (
-                <span className="absolute -right-1 -top-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground shadow-sm">
-                  Just logged
-                </span>
-              )}
-            </div>
-            <div className="px-1 py-2">
-              <p className="truncate text-sm font-semibold text-foreground">
-                {s.common_name}
-              </p>
-              <p className="truncate text-xs italic text-muted-foreground">
-                {s.scientific_name || "—"}
-              </p>
-            </div>
-          </motion.li>
-        ))}
-      </motion.ul>
+        {/* Grid lines */}
+        <span className="pointer-events-none absolute inset-0" aria-hidden>
+          <span className="absolute inset-y-0 left-1/3 w-px bg-white/[0.07]" />
+          <span className="absolute inset-y-0 left-2/3 w-px bg-white/[0.07]" />
+          <span className="absolute inset-x-0 top-1/3 h-px bg-white/[0.07]" />
+          <span className="absolute inset-x-0 top-2/3 h-px bg-white/[0.07]" />
+        </span>
+        {/* Top controls */}
+        <span className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-4">
+          <span className="grid h-9 w-9 place-items-center rounded-full bg-white/10 backdrop-blur">
+            <ArrowLeft className="h-4 w-4 text-white/80" />
+          </span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/70">
+            Capture the moment
+          </span>
+          <span className="grid h-9 w-9 place-items-center rounded-full bg-white/10 backdrop-blur">
+            <Zap className="h-4 w-4 text-white/80" />
+          </span>
+        </span>
+        {/* Focus bracket */}
+        <span className="pointer-events-none absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2" aria-hidden>
+          {(["left-0 top-0 border-l-2 border-t-2", "right-0 top-0 border-r-2 border-t-2", "left-0 bottom-0 border-l-2 border-b-2", "right-0 bottom-0 border-r-2 border-b-2"] as const).map(
+            (pos) => (
+              <span key={pos} className={`absolute h-5 w-5 border-white/60 ${pos}`} />
+            ),
+          )}
+        </span>
+        <span className="absolute inset-x-0 bottom-4 text-center font-mono text-[9px] uppercase tracking-[0.12em] text-white/30">
+          Tap to focus
+        </span>
+      </button>
+
+      {/* Controls row */}
+      <div className="mt-6 flex items-center justify-between px-2">
+        <button
+          type="button"
+          onClick={onUpload}
+          aria-label="Upload a photo"
+          className="grid h-[52px] w-[52px] place-items-center rounded-full bg-card shadow-[0_4px_16px_-8px_rgba(60,50,72,0.3)]"
+        >
+          <Upload className="h-5 w-5 text-foreground" strokeWidth={2} />
+        </button>
+
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.92 }}
+          onClick={onCamera}
+          aria-label="Take a photo"
+          className="grid h-[76px] w-[76px] place-items-center bg-primary blob shadow-[0_6px_20px_-6px_rgba(60,50,72,0.4)]"
+        >
+          <span className="h-[60px] w-[60px] rounded-full border-[3px] border-primary-foreground" />
+        </motion.button>
+
+        <button
+          type="button"
+          onClick={onSkip}
+          className="flex w-[52px] flex-col items-center text-center"
+        >
+          <span className="text-[13px] font-medium text-muted-foreground">Skip</span>
+          <span className="text-[10px] text-muted-foreground/70">No photo</span>
+        </button>
+      </div>
+
+      <p className="mt-6 text-center text-sm italic text-foreground/40">
+        Log every sighting, no matter how wild.
+      </p>
     </motion.div>
   );
 }
 
-function ScanLine() {
+/* ─────────────────────────── Step 2 · Scanning ────────────────────────── */
+
+function ScanningStep({
+  imageUrl,
+  group,
+}: {
+  imageUrl: string | null;
+  group?: string | null;
+}) {
   return (
-    <div className="w-full overflow-hidden rounded-full bg-white/20 backdrop-blur">
-      <motion.div
-        initial={{ x: "-100%" }}
-        animate={{ x: "100%" }}
-        transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
-        className="h-1 w-1/3 bg-primary-foreground/90"
-      />
-    </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="relative overflow-hidden rounded-[26px]">
+        <div
+          className="aspect-[4/3] w-full"
+          style={{ background: speciesGradient(group, "scan") }}
+        >
+          {imageUrl && (
+            <img
+              src={imageUrl}
+              alt="Photo being identified"
+              className="h-full w-full object-cover"
+            />
+          )}
+        </div>
+        {/* Sweep beam */}
+        <span className="pointer-events-none absolute inset-y-0 left-0 w-1/4 animate-scan bg-gradient-to-r from-transparent via-cream/30 to-transparent" />
+        {/* Identifying badge */}
+        <span className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-plum-deep/80 px-2.5 py-1 backdrop-blur">
+          <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-primary" />
+          <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-cream">
+            Identifying
+          </span>
+        </span>
+        {/* Progress bar */}
+        <span className="absolute inset-x-0 bottom-0 h-1 overflow-hidden bg-white/20">
+          <span className="block h-full w-1/3 animate-scan bg-primary-foreground/90" />
+        </span>
+      </div>
+
+      <div className="mt-8 flex flex-col items-center text-center">
+        <span className="blob-spin h-12 w-12 bg-primary" aria-hidden />
+        <h2 className="mt-5 font-display text-2xl">Checking the field guide…</h2>
+        <p className="mt-2 max-w-xs text-sm text-muted-foreground">
+          Matching against millions of species records.
+        </p>
+        <div className="mt-4 flex gap-1.5">
+          {[0, 0.22, 0.44].map((d) => (
+            <motion.span
+              key={d}
+              animate={{ opacity: [0.3, 1, 0.3] }}
+              transition={{ duration: 1.1, repeat: Infinity, delay: d }}
+              className="h-1.5 w-1.5 rounded-full bg-primary"
+            />
+          ))}
+        </div>
+        <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground/60">
+          Usually 2–3 seconds
+        </p>
+      </div>
+    </motion.div>
   );
 }
 
-function ResultCard({
+/* ─────────────────────────── Step 3 · Result ──────────────────────────── */
+
+function ResultStep({
   result,
-  saved,
-  onVisibilityChange,
+  imageUrl,
+  onConfirm,
+  onRetry,
 }: {
   result: AnimalIdentification;
-  saved: DbSighting | null;
-  onVisibilityChange: (s: DbSighting) => void;
+  imageUrl: string | null;
+  onConfirm: () => void;
+  onRetry: () => void;
 }) {
-  const setVisibility = useServerFn(setSightingVisibility);
-  const queryClient = useQueryClient();
-  const visibilityMutation = useMutation({
-    mutationFn: (isPublic: boolean) =>
-      setVisibility({ data: { id: saved!.id, is_public: isPublic } }),
-    onSuccess: (_d, isPublic) => {
-      if (saved) onVisibilityChange({ ...saved, is_public: isPublic });
-      queryClient.invalidateQueries({ queryKey: ["sightings"] });
-    },
-  });
-
-  if (!result.isAnimal) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="space-y-2"
-      >
-        <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
-          <X className="h-3 w-3" /> No animal found
-        </div>
-        <p className="text-sm text-muted-foreground">{result.description}</p>
-      </motion.div>
-    );
-  }
-
-  const dot =
-    result.confidence === "high"
-      ? "bg-primary"
-      : result.confidence === "medium"
-        ? "bg-accent"
-        : "bg-muted-foreground/50";
+  const fill =
+    result.confidence === "high" ? 88 : result.confidence === "medium" ? 60 : 28;
+  const high = result.confidence === "high";
 
   return (
     <motion.div
-      initial="hidden"
-      animate="show"
-      variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08 } } }}
-      className="space-y-3"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.35 }}
     >
-      <motion.div
-        variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}
-        className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground"
-      >
-        {result.group && (
-          <span className="inline-flex items-center rounded-full border-2 border-border bg-accent px-2.5 py-1 font-bold text-accent-foreground">
-            {result.group}
-          </span>
-        )}
-        <span className="inline-flex items-center gap-1.5 font-semibold">
-          <motion.span
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 360, damping: 18, delay: 0.2 }}
-            className={`inline-block h-2 w-2 rounded-full ${dot}`}
+      {imageUrl && (
+        <div className="relative -mx-5 -mt-6">
+          <img
+            src={imageUrl}
+            alt={`Photo of ${result.commonName}`}
+            className="h-64 w-full object-cover"
           />
-          {result.confidence} confidence
-        </span>
-      </motion.div>
-      <motion.div variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}>
-        <h2 className="font-display text-3xl leading-tight text-foreground">
-          {result.commonName}
-        </h2>
-        {result.scientificName && (
-          <p className="text-sm italic text-muted-foreground">
-            {result.scientificName}
-          </p>
-        )}
-      </motion.div>
-      <motion.p
-        variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}
-        className="text-sm leading-relaxed text-foreground/90"
-      >
-        {result.description}
-      </motion.p>
-      {result.note && (
-        <motion.p
-          variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}
-          className="rounded-lg bg-secondary px-3 py-2 text-xs text-secondary-foreground"
-        >
-          {result.note}
-        </motion.p>
+          <span className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background to-transparent" />
+        </div>
       )}
 
-      {saved && (
-        <motion.div variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}>
-          <VisibilityToggle
-            isPublic={saved.is_public}
-            busy={visibilityMutation.isPending}
-            onChange={(v) => visibilityMutation.mutate(v)}
-          />
-        </motion.div>
+      <h2 className="mt-4 font-display text-2xl">What did you see?</h2>
+
+      <button
+        type="button"
+        onClick={onConfirm}
+        className="card-journal organic-1 mt-4 flex w-full items-center gap-3.5 bg-card p-3.5 text-left"
+      >
+        <span
+          className="blob h-[50px] w-[50px] shrink-0"
+          style={{ background: speciesGradient(result.group, result.commonName) }}
+        />
+        <span className="min-w-0 flex-1">
+          <span className="block font-display text-sm">{result.commonName}</span>
+          {result.scientificName && (
+            <span className="block truncate text-[10px] italic text-muted-foreground">
+              {result.scientificName}
+            </span>
+          )}
+          <span className="mt-2 flex items-center gap-2">
+            <span className="h-1 flex-1 overflow-hidden rounded-full bg-foreground/[0.08]">
+              <span
+                className="block h-full rounded-full"
+                style={{
+                  width: `${fill}%`,
+                  background: high ? "var(--moss)" : "rgba(110,97,119,0.45)",
+                }}
+              />
+            </span>
+            <span
+              className="text-[8px] font-bold uppercase tracking-wide"
+              style={{ color: high ? "var(--moss)" : "var(--muted-foreground)" }}
+            >
+              {result.confidence}
+            </span>
+          </span>
+        </span>
+        <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
+          <Check className="h-4 w-4" />
+        </span>
+      </button>
+
+      {result.note && (
+        <p className="mt-3 rounded-2xl bg-secondary px-3 py-2 text-xs text-secondary-foreground">
+          {result.note}
+        </p>
       )}
+
+      <button
+        type="button"
+        onClick={onRetry}
+        className="mx-auto mt-5 block text-[11px] font-medium text-foreground/40 underline underline-offset-[3px]"
+      >
+        Not this? Try another photo
+      </button>
     </motion.div>
   );
 }
 
-function VisibilityToggle({
-  isPublic,
-  busy,
-  onChange,
+function NotAnimalStep({
+  description,
+  onRetry,
+  onLogAnyway,
 }: {
-  isPublic: boolean;
-  busy: boolean;
-  onChange: (isPublic: boolean) => void;
+  description: string;
+  onRetry: () => void;
+  onLogAnyway: () => void;
 }) {
   return (
-    <div className="mt-1 rounded-2xl border border-border bg-background/60 p-3">
-      <div className="flex rounded-full bg-muted p-1">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.35 }}
+      className="pt-6"
+    >
+      <div className="card-journal organic-2 bg-card px-5 py-7 text-center">
+        <span
+          className="mx-auto block h-[70px] w-[70px] blob"
+          style={{
+            background: "radial-gradient(ellipse at 42% 40%, #E8B898, #C88860)",
+          }}
+          aria-hidden
+        />
+        <h2 className="mt-5 font-display text-xl">No creature spotted</h2>
+        <p className="mx-auto mt-2 max-w-[240px] text-[13px] leading-relaxed text-muted-foreground">
+          {description ||
+            "We couldn't find an animal here. Maybe it was a plant, a track, or just a feeling."}
+        </p>
+      </div>
+
+      <div className="mt-4 space-y-3">
         <button
-          disabled={busy}
-          onClick={() => onChange(false)}
+          type="button"
+          onClick={onRetry}
+          className="flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-primary font-display text-sm uppercase tracking-wide text-primary-foreground"
+        >
+          <Camera className="h-4 w-4" /> Try another photo
+        </button>
+        <button
+          type="button"
+          onClick={onLogAnyway}
+          className="flex h-[52px] w-full items-center justify-center gap-2 rounded-full border-[1.5px] border-input bg-card text-sm font-medium text-foreground"
+        >
+          Log the memory anyway <ArrowRight className="h-4 w-4" />
+        </button>
+      </div>
+      <p className="mt-5 text-center text-sm italic text-foreground/40">
+        Every moment in nature is worth keeping.
+      </p>
+    </motion.div>
+  );
+}
+
+function ErrorStep({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      className="pt-10 text-center"
+    >
+      <p className="text-sm text-destructive">{message}</p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="mx-auto mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground"
+      >
+        <RotateCcw className="h-4 w-4" /> Try again
+      </button>
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────── Step 4 · The Memory ──────────────────────── */
+
+function MemoryStep({
+  result,
+  imageUrl,
+  speciesName,
+  onSpeciesName,
+  note,
+  onNote,
+  isPublic,
+  onPublic,
+  location,
+  saving,
+  error,
+  onBack,
+  onSave,
+}: {
+  result: AnimalIdentification | null;
+  imageUrl: string | null;
+  speciesName: string;
+  onSpeciesName: (v: string) => void;
+  note: string;
+  onNote: (v: string) => void;
+  isPublic: boolean;
+  onPublic: (v: boolean) => void;
+  location: Loc;
+  saving: boolean;
+  error: string | null;
+  onBack: () => void;
+  onSave: () => void;
+}) {
+  const confirmed = !!result?.isAnimal;
+  const now = new Date();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.35 }}
+    >
+      <div className="flex items-center gap-3 pb-1">
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="Back"
+          className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card"
+        >
+          <ArrowLeft className="h-4 w-4 text-foreground" />
+        </button>
+        <h2 className="font-display text-2xl">The memory</h2>
+      </div>
+
+      {imageUrl && (
+        <img
+          src={imageUrl}
+          alt={speciesName || "Your sighting"}
+          className="thumb-1 mt-3 h-40 w-full object-cover"
+        />
+      )}
+
+      {/* Species */}
+      <div className="mt-4">
+        {confirmed ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-primary/20 bg-primary/10 py-1.5 pl-2 pr-3">
+            <span className="h-2 w-2 rounded-full bg-primary" />
+            <span className="font-display text-[11px]">{speciesName}</span>
+            <Check className="h-3 w-3 text-primary" />
+          </span>
+        ) : (
+          <input
+            value={speciesName}
+            onChange={(e) => onSpeciesName(e.target.value)}
+            placeholder="What was it? (name it)"
+            className="w-full rounded-2xl border-[1.5px] border-input bg-card px-3.5 py-3 text-sm outline-none focus:border-ring"
+          />
+        )}
+      </div>
+
+      {/* Location + date */}
+      <div className="mt-4 rounded-2xl bg-card">
+        <div className="flex items-center gap-3 border-b border-border px-3.5 py-3">
+          <MapPin className="h-5 w-5 shrink-0 text-primary" />
+          <div className="min-w-0">
+            <p className="text-[13px] font-medium text-foreground">
+              {location ? "Current location" : "No location"}
+            </p>
+            <p className="font-mono text-[9.5px] text-muted-foreground">
+              {location
+                ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`
+                : "Allow location to pin this sighting"}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 px-3.5 py-3">
+          <Clock className="h-5 w-5 shrink-0 text-muted-foreground" />
+          <div className="min-w-0">
+            <p className="text-[13px] font-medium text-foreground">
+              {now.toLocaleDateString(undefined, {
+                weekday: "long",
+                month: "short",
+                day: "numeric",
+              })}
+            </p>
+            <p className="font-mono text-[9.5px] text-muted-foreground">
+              {now.toLocaleTimeString(undefined, {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Note */}
+      <div className="relative mt-4">
+        <textarea
+          value={note}
+          onChange={(e) => onNote(e.target.value)}
+          placeholder="What made this one memorable?"
+          className="min-h-[88px] w-full resize-none rounded-2xl border-[1.5px] border-input bg-card px-3.5 py-3.5 text-sm italic text-foreground outline-none placeholder:text-foreground/30 focus:border-ring"
+        />
+        {note.length === 0 && (
+          <span className="animate-cursor-blink pointer-events-none absolute left-[88px] top-[18px] h-[18px] w-0.5 bg-primary" />
+        )}
+      </div>
+
+      {/* Visibility */}
+      <div className="mt-4 flex rounded-full bg-muted p-1">
+        <button
+          type="button"
+          onClick={() => onPublic(false)}
           className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors ${
-            !isPublic
-              ? "bg-plum text-paper"
-              : "text-foreground/70 hover:text-foreground"
+            !isPublic ? "bg-plum text-paper" : "text-foreground/70"
           }`}
         >
           <Lock className="h-3.5 w-3.5" /> Private
         </button>
         <button
-          disabled={busy}
-          onClick={() => onChange(true)}
+          type="button"
+          onClick={() => onPublic(true)}
           className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors ${
-            isPublic
-              ? "bg-plum text-paper"
-              : "text-foreground/70 hover:text-foreground"
+            isPublic ? "bg-plum text-paper" : "text-foreground/70"
           }`}
         >
           <Globe className="h-3.5 w-3.5" /> Public
         </button>
       </div>
-      <p className="mt-2 text-center text-xs text-muted-foreground">
-        {isPublic
-          ? "Showing on your public journal."
-          : "Keeping this one private."}
+
+      {error && <p className="mt-3 text-center text-sm text-destructive">{error}</p>}
+
+      <button
+        type="button"
+        onClick={onSave}
+        disabled={saving}
+        className="mt-5 flex h-[54px] w-full items-center justify-center gap-2 rounded-full bg-primary font-display text-[15px] uppercase tracking-wide text-primary-foreground disabled:opacity-60"
+      >
+        {saving ? "Saving…" : "Save to Life List ✦"}
+      </button>
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────── Saved ────────────────────────────────────── */
+
+function SavedStep({
+  name,
+  group,
+  imageUrl,
+  onAnother,
+  onView,
+}: {
+  name: string;
+  group?: string | null;
+  imageUrl: string | null;
+  onAnother: () => void;
+  onView: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.35 }}
+      className="flex flex-col items-center pt-14 text-center"
+    >
+      <span
+        className="grid h-24 w-24 place-items-center blob"
+        style={{ background: speciesGradient(group, name) }}
+      >
+        {imageUrl ? (
+          <img src={imageUrl} alt={name} className="h-full w-full blob object-cover" />
+        ) : (
+          <Check className="h-10 w-10 text-paper" />
+        )}
+      </span>
+      <h2 className="mt-6 font-display text-2xl">Saved to your life list</h2>
+      <p className="mt-2 max-w-xs text-sm text-muted-foreground">
+        {name ? `“${name}” is now part of your collection.` : "Your sighting is saved."}
       </p>
-    </div>
+      <div className="mt-7 w-full max-w-xs space-y-3">
+        <button
+          type="button"
+          onClick={onView}
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-semibold text-primary-foreground"
+        >
+          View life list
+        </button>
+        <button
+          type="button"
+          onClick={onAnother}
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-full border border-border bg-card text-sm font-medium text-foreground"
+        >
+          <Camera className="h-4 w-4" /> Log another
+        </button>
+      </div>
+      <Link to="/life-list" className="sr-only">
+        Go to life list
+      </Link>
+    </motion.div>
   );
 }

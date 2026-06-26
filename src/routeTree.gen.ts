@@ -18,6 +18,7 @@ import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedUsernameRouteImport } from './routes/_authenticated/username'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedMapRouteImport } from './routes/_authenticated/map'
+import { Route as AuthenticatedLifeListRouteImport } from './routes/_authenticated/life-list'
 import { Route as AuthenticatedJournalRouteImport } from './routes/_authenticated/journal'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
@@ -67,6 +68,11 @@ const AuthenticatedMapRoute = AuthenticatedMapRouteImport.update({
   path: '/map',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedLifeListRoute = AuthenticatedLifeListRouteImport.update({
+  id: '/life-list',
+  path: '/life-list',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedJournalRoute = AuthenticatedJournalRouteImport.update({
   id: '/journal',
   path: '/journal',
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/journal': typeof AuthenticatedJournalRoute
+  '/life-list': typeof AuthenticatedLifeListRoute
   '/map': typeof AuthenticatedMapRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/username': typeof AuthenticatedUsernameRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/journal': typeof AuthenticatedJournalRoute
+  '/life-list': typeof AuthenticatedLifeListRoute
   '/map': typeof AuthenticatedMapRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/username': typeof AuthenticatedUsernameRoute
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/journal': typeof AuthenticatedJournalRoute
+  '/_authenticated/life-list': typeof AuthenticatedLifeListRoute
   '/_authenticated/map': typeof AuthenticatedMapRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/username': typeof AuthenticatedUsernameRoute
@@ -142,6 +151,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/sitemap.xml'
     | '/journal'
+    | '/life-list'
     | '/map'
     | '/profile'
     | '/username'
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/sitemap.xml'
     | '/journal'
+    | '/life-list'
     | '/map'
     | '/profile'
     | '/username'
@@ -170,6 +181,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/sitemap.xml'
     | '/_authenticated/journal'
+    | '/_authenticated/life-list'
     | '/_authenticated/map'
     | '/_authenticated/profile'
     | '/_authenticated/username'
@@ -255,6 +267,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMapRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/life-list': {
+      id: '/_authenticated/life-list'
+      path: '/life-list'
+      fullPath: '/life-list'
+      preLoaderRoute: typeof AuthenticatedLifeListRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/journal': {
       id: '/_authenticated/journal'
       path: '/journal'
@@ -288,6 +307,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedJournalRoute: typeof AuthenticatedJournalRoute
+  AuthenticatedLifeListRoute: typeof AuthenticatedLifeListRoute
   AuthenticatedMapRoute: typeof AuthenticatedMapRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedUsernameRoute: typeof AuthenticatedUsernameRoute
@@ -296,6 +316,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedJournalRoute: AuthenticatedJournalRoute,
+  AuthenticatedLifeListRoute: AuthenticatedLifeListRoute,
   AuthenticatedMapRoute: AuthenticatedMapRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedUsernameRoute: AuthenticatedUsernameRoute,
