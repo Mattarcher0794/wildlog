@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
-  ArrowLeft,
+  Camera,
   Clock,
   Globe,
   Lock,
@@ -12,7 +12,6 @@ import {
   Plus,
   RotateCcw,
   Upload,
-  Zap,
 } from "lucide-react";
 
 import heroAnimals from "@/assets/hero-animals.jpg";
@@ -49,7 +48,7 @@ export const Route = createFileRoute("/_authenticated/")({
   component: LogFlow,
 });
 
-type Phase = "dashboard" | "capture" | "scanning" | "result";
+type Phase = "dashboard" | "scanning" | "result";
 type Loc = { lat: number; lng: number } | null;
 
 function LogFlow() {
@@ -88,12 +87,6 @@ function LogFlow() {
     setIsPublic(false);
     if (cameraRef.current) cameraRef.current.value = "";
     if (uploadRef.current) uploadRef.current.value = "";
-  }
-
-  // Back to the empty viewfinder (used by "try another photo" / "log another").
-  function reset() {
-    clearTransient();
-    setPhase("capture");
   }
 
   // Back to the home dashboard.
@@ -165,21 +158,13 @@ function LogFlow() {
       <section className="mx-auto max-w-md px-5 pt-6">
         <h1 className="sr-only">Log a wildlife sighting</h1>
 
-        <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait">
           {phase === "dashboard" && (
             <Dashboard
               key="dashboard"
               sightings={sightingsQuery.data ?? []}
-              onLog={() => setPhase("capture")}
-            />
-          )}
-
-          {phase === "capture" && (
-            <CaptureStep
-              key="capture"
               onCamera={() => cameraRef.current?.click()}
               onUpload={() => uploadRef.current?.click()}
-              onBack={goHome}
             />
           )}
 
@@ -189,7 +174,7 @@ function LogFlow() {
 
           {phase === "result" &&
             (error ? (
-              <ErrorStep key="error" message={error} onRetry={reset} />
+              <ErrorStep key="error" message={error} onRetry={goHome} />
             ) : result ? (
               <ResultStep
                 key="result"
@@ -202,11 +187,10 @@ function LogFlow() {
                 location={location}
                 saving={saving}
                 error={error}
-                onRetry={reset}
+                onRetry={goHome}
                 onSave={save}
               />
             ) : null)}
-
         </AnimatePresence>
       </section>
 
@@ -284,10 +268,12 @@ function StatPill({
 
 function Dashboard({
   sightings,
-  onLog,
+  onCamera,
+  onUpload,
 }: {
   sightings: DbSighting[];
-  onLog: () => void;
+  onCamera: () => void;
+  onUpload: () => void;
 }) {
   const resolve = useServerFn(resolvePlaceNames);
   const queryClient = useQueryClient();
@@ -377,10 +363,20 @@ function Dashboard({
       <motion.button
         type="button"
         whileTap={{ scale: 0.98 }}
-        onClick={onLog}
+        onClick={onCamera}
         className="mt-6 flex h-[60px] w-full items-center justify-center gap-2.5 rounded-full bg-primary font-display text-base uppercase tracking-wide text-primary-foreground shadow-[0_8px_22px_-10px_rgba(60,50,72,0.5)]"
       >
-        <Plus className="h-5 w-5" strokeWidth={2.4} /> Log a sighting
+        <Camera className="h-5 w-5" strokeWidth={2.4} /> Log a sighting
+      </motion.button>
+
+      {/* Secondary CTA */}
+      <motion.button
+        type="button"
+        whileTap={{ scale: 0.98 }}
+        onClick={onUpload}
+        className="mt-3 flex h-[52px] w-full items-center justify-center gap-2 rounded-full border-[1.5px] border-primary/40 bg-card font-display text-sm uppercase tracking-wide text-foreground shadow-[0_4px_14px_-8px_rgba(60,50,72,0.3)]"
+      >
+        <Upload className="h-4 w-4" strokeWidth={2.4} /> Upload a previous photo
       </motion.button>
 
       {/* Recent sightings */}
@@ -470,110 +466,6 @@ function RecentRow({
   );
 }
 
-/* ─────────────────────────── Step 1 · Capture ─────────────────────────── */
-
-function CaptureStep({
-  onCamera,
-  onUpload,
-  onBack,
-}: {
-  onCamera: () => void;
-  onUpload: () => void;
-  onBack: () => void;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -12 }}
-      transition={{ duration: 0.35 }}
-    >
-      {/* Viewfinder */}
-      <button
-        type="button"
-        onClick={onCamera}
-        aria-label="Open camera"
-        className="relative block aspect-[4/5] w-full overflow-hidden rounded-[26px]"
-        style={{ backgroundColor: "#110C1E" }}
-      >
-        {/* Grid lines */}
-        <span className="pointer-events-none absolute inset-0" aria-hidden>
-          <span className="absolute inset-y-0 left-1/3 w-px bg-white/[0.07]" />
-          <span className="absolute inset-y-0 left-2/3 w-px bg-white/[0.07]" />
-          <span className="absolute inset-x-0 top-1/3 h-px bg-white/[0.07]" />
-          <span className="absolute inset-x-0 top-2/3 h-px bg-white/[0.07]" />
-        </span>
-        {/* Top controls */}
-        <span className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-4">
-          <span
-            role="button"
-            tabIndex={0}
-            aria-label="Back to home"
-            onClick={(e) => {
-              e.stopPropagation();
-              onBack();
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.stopPropagation();
-                onBack();
-              }
-            }}
-            className="grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-white/10 backdrop-blur"
-          >
-            <ArrowLeft className="h-4 w-4 text-white/80" />
-          </span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/70">
-            Capture the moment
-          </span>
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-white/10 backdrop-blur">
-            <Zap className="h-4 w-4 text-white/80" />
-          </span>
-        </span>
-        {/* Focus bracket */}
-        <span className="pointer-events-none absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2" aria-hidden>
-          {(["left-0 top-0 border-l-2 border-t-2", "right-0 top-0 border-r-2 border-t-2", "left-0 bottom-0 border-l-2 border-b-2", "right-0 bottom-0 border-r-2 border-b-2"] as const).map(
-            (pos) => (
-              <span key={pos} className={`absolute h-5 w-5 border-white/60 ${pos}`} />
-            ),
-          )}
-        </span>
-        <span className="absolute inset-x-0 bottom-4 text-center font-mono text-[9px] uppercase tracking-[0.12em] text-white/30">
-          Tap to focus
-        </span>
-      </button>
-
-      {/* Controls row */}
-      <div className="mt-6 flex items-center justify-between px-2">
-        <button
-          type="button"
-          onClick={onUpload}
-          aria-label="Upload a photo"
-          className="grid h-[52px] w-[52px] place-items-center rounded-full bg-card shadow-[0_4px_16px_-8px_rgba(60,50,72,0.3)]"
-        >
-          <Upload className="h-5 w-5 text-foreground" strokeWidth={2} />
-        </button>
-
-        <motion.button
-          type="button"
-          whileTap={{ scale: 0.92 }}
-          onClick={onCamera}
-          aria-label="Take a photo"
-          className="grid h-[76px] w-[76px] place-items-center bg-primary blob shadow-[0_6px_20px_-6px_rgba(60,50,72,0.4)]"
-        >
-          <span className="h-[60px] w-[60px] rounded-full border-[3px] border-primary-foreground" />
-        </motion.button>
-
-        {/* Spacer to keep the shutter centred */}
-        <span className="h-[52px] w-[52px]" aria-hidden />
-      </div>
-
-      <p className="mt-6 text-center text-sm italic text-foreground/40">
-        Log every sighting, no matter how wild.
-      </p>
-    </motion.div>
-  );
-}
 
 /* ─────────────────────────── Step 2 · Scanning ────────────────────────── */
 
