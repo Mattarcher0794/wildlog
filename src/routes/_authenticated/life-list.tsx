@@ -277,8 +277,9 @@ function SpeciesCard({
             {entry.locations} spot{entry.locations === 1 ? "" : "s"}
           </p>
         )}
-      </Link>
+      </button>
     </motion.div>
+
   );
 }
 
