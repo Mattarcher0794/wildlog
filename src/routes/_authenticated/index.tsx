@@ -1,12 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowLeft,
-  Camera,
-  Check,
   Clock,
   Globe,
   Lock,
@@ -51,7 +49,7 @@ export const Route = createFileRoute("/_authenticated/")({
   component: LogFlow,
 });
 
-type Phase = "dashboard" | "capture" | "scanning" | "result" | "saved";
+type Phase = "dashboard" | "capture" | "scanning" | "result";
 type Loc = { lat: number; lng: number } | null;
 
 function LogFlow() {
@@ -154,7 +152,7 @@ function LogFlow() {
         },
       });
       queryClient.invalidateQueries({ queryKey: ["sightings"] });
-      setPhase("saved");
+      goHome();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save. Try again.");
     } finally {
@@ -209,16 +207,6 @@ function LogFlow() {
               />
             ) : null)}
 
-          {phase === "saved" && (
-            <SavedStep
-              key="saved"
-              name={speciesName}
-              group={result?.group}
-              imageUrl={thumb}
-              onAnother={reset}
-              onView={() => navigate({ to: "/life-list" })}
-            />
-          )}
         </AnimatePresence>
       </section>
 
@@ -871,62 +859,3 @@ function ErrorStep({ message, onRetry }: { message: string; onRetry: () => void 
   );
 }
 
-/* ─────────────────────────── Saved ────────────────────────────────────── */
-
-function SavedStep({
-  name,
-  group,
-  imageUrl,
-  onAnother,
-  onView,
-}: {
-  name: string;
-  group?: string | null;
-  imageUrl: string | null;
-  onAnother: () => void;
-  onView: () => void;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.35 }}
-      className="flex flex-col items-center pt-14 text-center"
-    >
-      <span
-        className="grid h-24 w-24 place-items-center blob"
-        style={{ background: speciesGradient(group, name) }}
-      >
-        {imageUrl ? (
-          <img src={imageUrl} alt={name} className="h-full w-full blob object-cover" />
-        ) : (
-          <Check className="h-10 w-10 text-paper" />
-        )}
-      </span>
-      <h2 className="mt-6 font-display text-2xl">Saved to your life list</h2>
-      <p className="mt-2 max-w-xs text-sm text-muted-foreground">
-        {name ? `“${name}” is now part of your collection.` : "Your sighting is saved."}
-      </p>
-      <div className="mt-7 w-full max-w-xs space-y-3">
-        <button
-          type="button"
-          onClick={onView}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-semibold text-primary-foreground"
-        >
-          View life list
-        </button>
-        <button
-          type="button"
-          onClick={onAnother}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-full border border-border bg-card text-sm font-medium text-foreground"
-        >
-          <Camera className="h-4 w-4" /> Log another
-        </button>
-      </div>
-      <Link to="/life-list" className="sr-only">
-        Go to life list
-      </Link>
-    </motion.div>
-  );
-}
