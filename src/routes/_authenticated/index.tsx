@@ -122,7 +122,7 @@ function LogFlow() {
           animal_group: result?.group || null,
           confidence: result?.confidence || null,
           description: result?.description || null,
-          note: null,
+          note: result?.note || null,
           is_animal: result ? result.isAnimal : true,
           is_public: isPublic,
           lat: location?.lat ?? null,
@@ -477,6 +477,13 @@ function ResultStep({
       {result.description && (
         <p className="mt-4 text-[15px] leading-relaxed text-foreground/80">
           {result.description}
+        </p>
+      )}
+
+      {/* Photo-specific observation */}
+      {result.note && (
+        <p className="mt-4 rounded-[18px] bg-peach-light px-4 py-3 text-[13px] leading-relaxed text-plum">
+          {result.note}
         </p>
       )}
 
