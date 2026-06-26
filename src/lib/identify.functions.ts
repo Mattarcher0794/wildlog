@@ -46,6 +46,7 @@ Respond ONLY with a single JSON object matching this exact shape:
 }
 - "group" is the broad taxonomic category that best fits the animal.
 - "description" is 2-3 short sentences covering habitat, distinctive features, and one charming fun fact.
+- "note" is a one-sentence, photo-specific observation describing what is actually visible in this exact image (e.g. "Specifically, the photo displays several adult males in a social setting.").
 - If the image does not contain an animal, set isAnimal=false, commonName "Not an animal", scientificName "", group "Other", confidence "low", and describe what you see instead.
 - Never wrap the JSON in markdown fences. No prose outside the JSON.`;
 
