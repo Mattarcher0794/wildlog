@@ -168,11 +168,20 @@ function LogFlow() {
         <h1 className="sr-only">Log a wildlife sighting</h1>
 
         <AnimatePresence mode="wait">
+          {phase === "dashboard" && (
+            <Dashboard
+              key="dashboard"
+              sightings={sightingsQuery.data ?? []}
+              onLog={() => setPhase("capture")}
+            />
+          )}
+
           {phase === "capture" && (
             <CaptureStep
               key="capture"
               onCamera={() => cameraRef.current?.click()}
               onUpload={() => uploadRef.current?.click()}
+              onBack={goHome}
             />
           )}
 
