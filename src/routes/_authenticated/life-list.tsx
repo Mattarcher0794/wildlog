@@ -154,10 +154,21 @@ function LifeListPage() {
             <div className="mt-6 grid grid-cols-2 gap-3.5 sm:grid-cols-3">
               <AnimatePresence initial={false} mode="popLayout">
                 {filtered.map((s, i) => (
-                  <SpeciesCard key={s.key} entry={s} index={i} />
+                  <SpeciesCard
+                    key={s.key}
+                    entry={s}
+                    index={i}
+                    onSelect={() =>
+                      navigate({
+                        to: "/life-list",
+                        search: { species: s.key },
+                      })
+                    }
+                  />
                 ))}
               </AnimatePresence>
             </div>
+
 
             {filtered.length === 0 && (
               <p className="py-10 text-center text-sm text-muted-foreground">
