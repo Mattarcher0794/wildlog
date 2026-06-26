@@ -11,6 +11,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { listMySightings } from "@/lib/sightings.functions";
 
 export const Route = createFileRoute("/_authenticated/profile")({
+  head: () => ({
+    meta: [
+      { title: "My Profile — Wildlog" },
+      {
+        name: "description",
+        content:
+          "Manage your Wildlog account, view your sighting stats, control contact details, and share your public field journal.",
+      },
+      { property: "og:title", content: "My Profile — Wildlog" },
+      {
+        property: "og:description",
+        content:
+          "Manage your Wildlog account, view your sighting stats, and share your public field journal.",
+      },
+      { property: "og:url", content: "https://wildlog.life/profile" },
+    ],
+    links: [{ rel: "canonical", href: "https://wildlog.life/profile" }],
+  }),
   component: ProfilePage,
 });
 
