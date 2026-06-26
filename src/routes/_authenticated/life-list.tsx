@@ -199,8 +199,19 @@ function LifeListPage() {
           </>
         )}
       </section>
+
+      <AnimatePresence>
+        {selectedSpecies && (
+          <SpeciesSheet
+            key={selectedSpecies}
+            speciesKey={selectedSpecies}
+            onClose={() => navigate({ to: "/life-list", search: {} })}
+          />
+        )}
+      </AnimatePresence>
     </main>
   );
+
 }
 
 function SpeciesCard({ entry, index }: { entry: SpeciesEntry; index: number }) {
