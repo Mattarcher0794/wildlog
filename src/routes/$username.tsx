@@ -124,7 +124,7 @@ function PublicProfilePage() {
                 {s.image_url && (
                   <img
                     src={s.image_url}
-                    alt={s.common_name}
+                    alt={`Photo of a ${s.common_name}`}
                     loading="lazy"
                     className={`${i % 2 === 0 ? "blob" : "blob-alt"} aspect-square w-full object-cover`}
                   />
