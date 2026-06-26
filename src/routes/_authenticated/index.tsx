@@ -158,21 +158,13 @@ function LogFlow() {
       <section className="mx-auto max-w-md px-5 pt-6">
         <h1 className="sr-only">Log a wildlife sighting</h1>
 
-        <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait">
           {phase === "dashboard" && (
             <Dashboard
               key="dashboard"
               sightings={sightingsQuery.data ?? []}
-              onLog={() => setPhase("capture")}
-            />
-          )}
-
-          {phase === "capture" && (
-            <CaptureStep
-              key="capture"
               onCamera={() => cameraRef.current?.click()}
               onUpload={() => uploadRef.current?.click()}
-              onBack={goHome}
             />
           )}
 
@@ -182,7 +174,7 @@ function LogFlow() {
 
           {phase === "result" &&
             (error ? (
-              <ErrorStep key="error" message={error} onRetry={reset} />
+              <ErrorStep key="error" message={error} onRetry={goHome} />
             ) : result ? (
               <ResultStep
                 key="result"
@@ -195,11 +187,10 @@ function LogFlow() {
                 location={location}
                 saving={saving}
                 error={error}
-                onRetry={reset}
+                onRetry={goHome}
                 onSave={save}
               />
             ) : null)}
-
         </AnimatePresence>
       </section>
 
