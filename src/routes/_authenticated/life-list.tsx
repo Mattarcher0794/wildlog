@@ -1,9 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { MapPin, Search, Sparkles } from "lucide-react";
 
+import { SpeciesSheet } from "@/components/SpeciesSheet";
 import { useRequireUsername } from "@/hooks/use-profile";
 import { listMySightings } from "@/lib/sightings.functions";
 import { listNearbySpecies } from "@/lib/sightings.functions";
