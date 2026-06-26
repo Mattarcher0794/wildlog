@@ -268,10 +268,12 @@ function StatPill({
 
 function Dashboard({
   sightings,
-  onLog,
+  onCamera,
+  onUpload,
 }: {
   sightings: DbSighting[];
-  onLog: () => void;
+  onCamera: () => void;
+  onUpload: () => void;
 }) {
   const resolve = useServerFn(resolvePlaceNames);
   const queryClient = useQueryClient();
@@ -361,10 +363,20 @@ function Dashboard({
       <motion.button
         type="button"
         whileTap={{ scale: 0.98 }}
-        onClick={onLog}
+        onClick={onCamera}
         className="mt-6 flex h-[60px] w-full items-center justify-center gap-2.5 rounded-full bg-primary font-display text-base uppercase tracking-wide text-primary-foreground shadow-[0_8px_22px_-10px_rgba(60,50,72,0.5)]"
       >
-        <Plus className="h-5 w-5" strokeWidth={2.4} /> Log a sighting
+        <Camera className="h-5 w-5" strokeWidth={2.4} /> Log a sighting
+      </motion.button>
+
+      {/* Secondary CTA */}
+      <motion.button
+        type="button"
+        whileTap={{ scale: 0.98 }}
+        onClick={onUpload}
+        className="mt-3 flex h-[52px] w-full items-center justify-center gap-2 rounded-full border-[1.5px] border-primary/40 bg-card font-display text-sm uppercase tracking-wide text-foreground shadow-[0_4px_14px_-8px_rgba(60,50,72,0.3)]"
+      >
+        <Upload className="h-4 w-4" strokeWidth={2.4} /> Upload a previous photo
       </motion.button>
 
       {/* Recent sightings */}
