@@ -75,7 +75,7 @@ function SpeciesDetailPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.25 }}
-        className="absolute inset-0 bg-plum/25 backdrop-blur-xl"
+        className="absolute inset-0 bg-plum/[0.08] backdrop-blur-xl"
         onClick={() => navigate({ to: "/life-list" })}
       />
 
