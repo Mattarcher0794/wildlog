@@ -65,6 +65,9 @@ const ORGANIC = ["blob", "blob-alt"] as const;
 
 function LifeListPage() {
   useRequireUsername();
+  const navigate = useNavigate();
+  const { species: selectedSpecies } = Route.useSearch();
+
 
   const sightingsQuery = useQuery({
     queryKey: ["sightings"],
