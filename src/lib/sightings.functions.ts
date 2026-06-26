@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
+import { reverseGeocode } from "@/lib/geocode.server";
 
 export type NearbySpeciesRow = {
   commonName: string;
