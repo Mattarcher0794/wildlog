@@ -1,9 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { MapPin, Search, Sparkles } from "lucide-react";
 
+import { SpeciesSheet } from "@/components/SpeciesSheet";
 import { useRequireUsername } from "@/hooks/use-profile";
 import { listMySightings } from "@/lib/sightings.functions";
 import { listNearbySpecies } from "@/lib/sightings.functions";
@@ -18,6 +19,9 @@ import {
 import { speciesGradient } from "@/lib/species-color";
 
 export const Route = createFileRoute("/_authenticated/life-list")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    species: typeof search.species === "string" ? search.species : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Life List — Wildlog" },
@@ -61,6 +65,9 @@ const ORGANIC = ["blob", "blob-alt"] as const;
 
 function LifeListPage() {
   useRequireUsername();
+  const navigate = useNavigate();
+  const { species: selectedSpecies } = Route.useSearch();
+
 
   const sightingsQuery = useQuery({
     queryKey: ["sightings"],
@@ -147,10 +154,21 @@ function LifeListPage() {
             <div className="mt-6 grid grid-cols-2 gap-3.5 sm:grid-cols-3">
               <AnimatePresence initial={false} mode="popLayout">
                 {filtered.map((s, i) => (
-                  <SpeciesCard key={s.key} entry={s} index={i} />
+                  <SpeciesCard
+                    key={s.key}
+                    entry={s}
+                    index={i}
+                    onSelect={() =>
+                      navigate({
+                        to: "/life-list",
+                        search: { species: s.key },
+                      })
+                    }
+                  />
                 ))}
               </AnimatePresence>
             </div>
+
 
             {filtered.length === 0 && (
               <p className="py-10 text-center text-sm text-muted-foreground">
@@ -181,11 +199,30 @@ function LifeListPage() {
           </>
         )}
       </section>
+
+      <AnimatePresence>
+        {selectedSpecies && (
+          <SpeciesSheet
+            key={selectedSpecies}
+            speciesKey={selectedSpecies}
+            onClose={() => navigate({ to: "/life-list", search: {} })}
+          />
+        )}
+      </AnimatePresence>
     </main>
   );
+
 }
 
-function SpeciesCard({ entry, index }: { entry: SpeciesEntry; index: number }) {
+function SpeciesCard({
+  entry,
+  index,
+  onSelect,
+}: {
+  entry: SpeciesEntry;
+  index: number;
+  onSelect: () => void;
+}) {
   const radius = ORGANIC[index % ORGANIC.length];
   const label = badgeLabel(entry.badge);
   return (
@@ -196,11 +233,12 @@ function SpeciesCard({ entry, index }: { entry: SpeciesEntry; index: number }) {
       exit={{ opacity: 0, y: -8 }}
       transition={{ delay: Math.min(index, 8) * 0.04, duration: 0.3 }}
     >
-      <Link
-        to="/species/$species"
-        params={{ species: entry.key }}
-        className="card-journal relative block bg-card p-2.5"
+      <button
+        type="button"
+        onClick={onSelect}
+        className="card-journal relative block w-full bg-card p-2.5 text-left"
       >
+
         <div className={`relative ${radius} aspect-square w-full overflow-hidden`}>
           {entry.latest.image_url ? (
             <img
@@ -239,8 +277,9 @@ function SpeciesCard({ entry, index }: { entry: SpeciesEntry; index: number }) {
             {entry.locations} spot{entry.locations === 1 ? "" : "s"}
           </p>
         )}
-      </Link>
+      </button>
     </motion.div>
+
   );
 }
 
