@@ -135,6 +135,7 @@ export type Database = {
           lat: number | null
           lng: number | null
           note: string | null
+          place_name: string | null
           scientific_name: string | null
           user_id: string
         }
@@ -153,6 +154,7 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           note?: string | null
+          place_name?: string | null
           scientific_name?: string | null
           user_id: string
         }
@@ -171,6 +173,7 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           note?: string | null
+          place_name?: string | null
           scientific_name?: string | null
           user_id?: string
         }

@@ -1,73 +1,68 @@
-# Wildlog — Design Handoff Implementation
+## Overview
 
-A full restructure of Wildlog to match the high-fidelity handoff: a 4-tab app (**Log · Life List · Map · Profile**), a species-grouped **Life List** collection with a **Species Detail** drill-down, a dedicated **multi-step Log flow**, plus the **badge + ghost-slot** gamification layer.
+Two changes:
+1. **Home (Log)** — turn the camera-first screen into the dashboard from your mock, and bring back the floating animal illustration (placed small, top-right).
+2. **Life List** — switch species thumbnails from rounded-square (`organic-*`) back to the brand "misshapen circle" blob shapes.
 
-## Decisions locked in with you
-- **Scope:** full restructure.
-- **Life List:** species-grouped collection (one card per species) → drill into Species Detail.
-- **Gamification:** badges (NEW / FIRST THIS SEASON / RARE NEARBY) **and** ghost slots ("spotted nearby") are IN.
-- **Camera:** styled native capture (OS camera/file picker behind a viewfinder-styled screen — no flaky in-browser video stream).
-
-### Deferred (not selected — left out of this pass)
-- **"Log as Mystery" / identify-later** logging (the dark mystery card).
-- **Multi-candidate AI picker** with several ranked species — we keep the current single best-match result, restyled.
-- **Weather/conditions chips** persisted on a sighting.
-
-I'll build the Log results screen around the single confident result; the mystery/multi-pick structure can be layered in later without rework.
-
-## 1 · Design tokens & utilities (`src/styles.css`)
-Add the handoff's primitives so every screen reuses them:
-- Badge utilities: `.badge-moss` (NEW / FIRST THIS SEASON), `.badge-peach` (RARE NEARBY), `.badge-amber` (neutral) — exact fonts/padding/radius from the spec.
-- Organic card-radius variants (4 patterns) so grid cards alternate, plus the smaller thumbnail variants.
-- Ghost-slot utility: hatched `repeating-linear-gradient` background + dashed border.
-- Keyframes: `float`, `pulse`, `scan-line`, `cursor-blink` (we already have `blob-rotate`).
-- Confirm peach / moss / cream tokens already exist (they do) and add a `--color-tab-text` token to centralize the tab bar colors.
-
-## 2 · Navigation restructure
-- **Tabs:** Log (`/`, camera), Life List (`/life-list`, book), Map (`/map`, blob), Profile (`/profile`, person) — update `TabBar.tsx` labels/targets.
-- Rename the browse screen to **Life List** at `/life-list`; keep a redirect from the old `/journal` and update the sitemap + internal links.
-- Tab bar visuals already match the floating-pill spec; only the Life List label/target changes.
-
-## 3 · Log flow (`/` index, styled native capture)
-Replace the current "identify then auto-save" home with a staged flow (one route, internal phase state):
-1. **Capture** — viewfinder-styled entry (3×3 grid lines, corner focus brackets, shutter blob, upload button, "no photo" skip). Buttons trigger the existing native file inputs (`capture="environment"` + gallery).
-2. **Scanning** — full scanning state: sweep beam over the photo, pulsing "IDENTIFYING" badge, animated progress bar, spinning blob, "Checking the field guide…" copy.
-3. **Result** — single best match, restyled: blob avatar, species name (Sniglet), latin name, confidence bar (high=moss / low=muted). **"Not an animal" → peach reassurance card** with two equal CTAs (retry / log anyway), never red.
-4. **The Memory** — note form: confirmed-species chip, location + date rows (auto-filled, read-only for now), note textarea with blinking cursor, public/private toggle, **"Save to Life List"** CTA.
-
-**Behavior change:** saving moves from automatic (current) to an explicit Save at step 4, so the note is captured before the row is written. `createSighting` is called on Save instead of right after identify.
-
-## 4 · Life List (`/life-list`)
-- **Header block:** big species count (Sniglet 66px), "Species" label, mono stats row (`N SIGHTINGS | R REGIONS | M THIS YEAR`).
-- **Filter chips:** All + animal groups (reuse existing group logic).
-- **Card grid (2-col):** one card **per unique species** (grouped from `listMySightings` by common name), each with newest photo, organic radius, species name, mono metadata (count + last seen), and **badges**:
-  - NEW (moss) — species first logged recently.
-  - FIRST THIS SEASON (moss) — first sighting this season.
-  - RARE NEARBY (peach) — species uncommon among nearby public sightings.
-- **Ghost slots:** dashed hatched cards for species logged publicly nearby that the user hasn't logged — interleaved into the grid, faded styling, "SPOTTED NEARBY?".
-- **Empty state:** centred animated peach blob, "Your life list starts with one.", moss CTA → Log.
-- Bottom gradient fade + floating "Log a Sighting" CTA above the tab bar.
-
-## 5 · Species Detail (`/species/$species`)
-New route, drilled from a Life List card:
-- Hero (species-colour radial gradient + dark overlay), back/share buttons, species tags, name + latin name.
-- Sheet card sliding over the hero with a stats bar (Sightings / Locations / First seen).
-- Chronological **sighting rows**: blob avatar, name, mono date/time, italic note, privacy icon.
-- Reuses `listMySightings` filtered to the species (client-side); share button uses the Web Share API.
-
-## 6 · Backend (data layer)
-- **No schema migration required** — existing `sightings` columns cover this (species name, group, coords, `approx_lat/approx_lng`, note, is_public, image, created_at).
-- **New server fn `listNearbySpecies`** (public, anon publishable client): reads public + animal sightings within a bounding box around the user's approximate location, grouped by species, excluding species the user already has — powers ghost slots + the RARE NEARBY badge. Uses the existing anon SELECT policy on the approximate-coordinate columns (no exact coordinates exposed).
-- Badge derivation (NEW / FIRST THIS SEASON) is computed client-side from the user's own sightings.
-
-## 7 · Verification
-- `tsgo --noEmit` for types.
-- Drive the preview with Playwright (authenticated session): run the full Log flow end-to-end, confirm a sighting saves, Life List groups by species with badges, ghost slots render, and Species Detail opens. Screenshot each key screen against the handoff.
+The existing camera → scanning → result → saved flow is kept intact; it just sits behind the new **Log a sighting** button instead of being the first thing you see.
 
 ---
 
-### Technical notes
-- Life List + Species Detail group client-side over the existing `listMySightings` query (`queryKey: ["sightings"]`); no per-species fetch needed.
-- Ghost slots/RARE NEARBY need the user's geolocation; if denied, those features degrade gracefully (grid still renders, gamification hidden).
-- Species Detail param is the URL-encoded common name (`/species/$species`); no species table is introduced.
-- The "Not an animal" and (future) mystery states share the result-card structure so adding mystery/multi-pick later is additive.
+## 1. Home / Log dashboard — `src/routes/_authenticated/index.tsx`
+
+Add a new initial phase `"dashboard"`. The screen opens on the dashboard; tapping **Log a sighting** switches to the existing `capture` viewfinder, and the rest of the flow (`scanning` → `result` → `saved`) is unchanged. After saving, returning home shows the refreshed dashboard.
+
+**Dashboard layout (top → bottom):**
+
+```text
+THURSDAY · 14 JUN 2025                    ◜ small floating
+WHAT DID YOU SPOT?                          animal blob ◞  (top-right)
+
+[ ● 3 day streak ] [ 5 this week ] [ 47 total ]
+
+[      +  Log a sighting      ]   ← solid moss-green pill
+
+RECENT SIGHTINGS
+ ◯ European Robin            NEW
+   Hampstead Heath · 14 Jun · 07:23
+ ◯ Red Fox
+   Richmond Park · 09 Jun · 18:45
+ ...
+```
+
+- **Date line**: derived from the current date (e.g. `THURSDAY · 26 JUN 2026`), mono uppercase muted.
+- **Headline**: "What did you spot?" in the display font, left-aligned.
+- **Floating animal hero**: `hero-animals.jpg` (already in `src/assets`) rendered small as a `blob` with the `animate-float` utility, positioned compact in the top-right beside the headline.
+- **Stat pills** (real values computed from `listMySightings`):
+  - **streak** — consecutive days (ending today or yesterday) that have at least one sighting.
+  - **this week** — sightings in the last 7 days.
+  - **total** — total sightings logged.
+- **Log a sighting**: full-width moss-green pill with a `+` icon → sets phase to `capture`.
+- **Recent sightings**: vertical rows (latest ~5), each with a blob avatar (photo if present, else `speciesGradient`), common name, location line, and `date · time`. A **NEW** badge shows only on the first-ever sighting of a species. No SEASON tags, no globe/lock emojis.
+
+If there are no sightings yet, the recent section is replaced by a short prompt to log the first one.
+
+## 2. Reverse-geocoded location names
+
+Recent rows show place names (e.g. "Richmond Park"), but only GPS coordinates are stored today, so we add geocoding via the **Google Maps Platform** connector.
+
+- **Connect** the Google Maps Platform connector (one-time link; no manual key entry).
+- **Migration**: add a `place_name text` column to `public.sightings`.
+- **On log**: `createSighting` (in `src/lib/sightings.functions.ts`) reverse-geocodes lat/lng through the Maps gateway and stores `place_name`.
+- **Backfill for existing rows**: a server function resolves and persists `place_name` for recent sightings that don't have one yet, called by the recent list. Rows display `place_name` when available and fall back gracefully (date/time only) while it resolves.
+
+## 3. Life List misshapen circles — `src/routes/_authenticated/life-list.tsx`
+
+- Change the species card image container from the `organic-1..4` rounded-square radii to the brand blob shapes, alternating `blob` / `blob-alt` across the grid (the same misshapen circles used elsewhere in the app).
+- Apply the same blob treatment to the "Seen nearby" ghost slots so the grid stays visually consistent.
+- Nothing else on the Life List changes (badges, counts, search, layout all stay).
+
+---
+
+## Technical notes
+
+- **Stats** are computed client-side from the already-loaded `["sightings"]` query — no new tables.
+- **NEW badge** reuses the existing life-list badge logic (first occurrence of a species).
+- **Geocoding** goes through the Lovable connector gateway (`createServerFn`, server-side); the browser key is not used for geocoding. Results are cached in `place_name` so each coordinate is looked up once.
+- The capture/scanning/result/saved components and the save payload are unchanged apart from `place_name` being populated.
+- **Files touched**: `src/routes/_authenticated/index.tsx`, `src/routes/_authenticated/life-list.tsx`, `src/lib/sightings.functions.ts`, one DB migration, plus the Google Maps connector link.
