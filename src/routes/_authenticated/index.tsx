@@ -255,14 +255,15 @@ function Home() {
 function Hero({ onCamera, onUpload }: { onCamera: () => void; onUpload: () => void }) {
   return (
     <div className="text-center">
-      <motion.h1
+      <motion.p
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.45 }}
         className="font-display text-5xl leading-[1.05] text-foreground sm:text-6xl"
+        aria-hidden="true"
       >
         What did you <span className="text-primary">spot?</span>
-      </motion.h1>
+      </motion.p>
       <motion.p
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
