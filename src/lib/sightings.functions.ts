@@ -112,13 +112,52 @@ export const createSighting = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => createSchema.parse(d))
   .handler(async ({ data, context }): Promise<DbSighting> => {
+    // Resolve a readable place name when we have coordinates.
+    let place_name: string | null = null;
+    if (data.lat != null && data.lng != null) {
+      place_name = await reverseGeocode(data.lat, data.lng);
+    }
     const { data: row, error } = await context.supabase
       .from("sightings")
-      .insert({ ...data, user_id: context.userId })
+      .insert({ ...data, place_name, user_id: context.userId })
       .select(SELECT)
       .single();
     if (error) throw new Error(error.message);
     return row as DbSighting;
+  });
+
+/**
+ * Backfill readable place names for the caller's recent sightings that have
+ * coordinates but no `place_name` yet. Returns a map of id → place name for the
+ * ones that were resolved, so the UI can update without a full refetch.
+ */
+export const resolvePlaceNames = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ ids: z.array(z.string()).max(20) }).parse(d),
+  )
+  .handler(async ({ data, context }): Promise<Record<string, string>> => {
+    if (data.ids.length === 0) return {};
+    const { data: rows, error } = await context.supabase
+      .from("sightings")
+      .select("id, lat, lng, place_name")
+      .eq("user_id", context.userId)
+      .in("id", data.ids);
+    if (error) throw new Error(error.message);
+
+    const resolved: Record<string, string> = {};
+    for (const r of rows ?? []) {
+      if (r.place_name || r.lat == null || r.lng == null) continue;
+      const name = await reverseGeocode(r.lat, r.lng);
+      if (!name) continue;
+      const { error: upErr } = await context.supabase
+        .from("sightings")
+        .update({ place_name: name })
+        .eq("id", r.id)
+        .eq("user_id", context.userId);
+      if (!upErr) resolved[r.id] = name;
+    }
+    return resolved;
   });
 
 export const setSightingVisibility = createServerFn({ method: "POST" })
